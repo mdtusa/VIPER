@@ -1,0 +1,100 @@
+﻿
+@{
+    ViewBag.Title = "Schedule";
+}
+
+<h2>Schedule</h2>
+
+@(Html.Kendo().Gantt<VIPER.Models.ViewModel.ScheduleViewModel, VIPER.Models.ViewModel.DependencyViewModel>()
+    .Name("gantt")
+    .Columns(columns =>
+    {
+        columns.Bound(c => c.TaskID).Title("ID").Width(50);
+        columns.Bound("title").Editable(false).Sortable(true);
+        columns.Resources("resources").Editable(true).Title("Assigned Resources");
+    })
+    .Views(views =>
+    {
+        views.DayView();
+        views.WeekView(weekView => weekView.Selected(true));
+        views.MonthView();
+    })
+    .Height(800)
+    .ShowWorkHours(false)
+    .ShowWorkDays(false)
+    .Snap(false)
+    .Events(e => e.MoveEnd("RefreshGantt").Save("RefreshGantt"))
+    .DataSource(d => d
+        .Model(m =>
+        {
+            m.Id(f => f.TaskID);
+            m.ParentId(f => f.ParentID);
+            m.OrderId(f => f.OrderId);
+            m.Field(f => f.Expanded).DefaultValue(true);
+        })
+        .Read("ReadJobs", "Admin")
+        .Update("UpdateJobs", "Admin")
+    )
+       
+    .Resources(r => r
+    .Field("resources")
+    .DataColorField("Color")
+    .DataTextField("Name")
+    .DataSource(d => d
+        .Custom()
+        .Schema(s => s
+            .Model(m => m.Id("ID"))
+            .Data("Data")
+        )
+        .Transport(t =>
+        {
+                t.Read("ReadResources", "Admin");
+        })
+    ))
+    .Assignments<VIPER.Models.ViewModel.EmployeeProcessViewModel>(a => a
+        .DataTaskIdField("JobProcessID")
+        .DataResourceIdField("EmployeeID")
+        .DataValueField("Units")
+        .DataSource(d => d
+                .Events(e => e.Error("error"))
+                .Model(m =>
+                {
+                    m.Id(f => f.EmployeeProcessID);
+                })
+    .Read("ReadAssignments", "Admin")
+    .Create("CreateAssignment", "Admin")
+    .Destroy("DestroyAssignment", "Admin")
+    .Update("UpdateAssignment", "Admin")
+        )
+    )
+)
+
+
+<script type="text/javascript">
+   
+    function RefreshGantt(e)
+    {
+        var gantt = $("#gantt").getKendoGantt();
+        gantt.dataSource.read();
+        //gantt.dependencies.read();
+        
+    }
+
+    function error(args) {
+        if (args.errors) {
+            var gantt = $("#gantt").data("kendoGantt");
+
+            gantt.one("dataBinding", function (e) {
+                e.preventDefault();   // cancel grid rebind if error occurs
+                e.sender.assignments.dataSource.read();
+
+                for (var error in args.errors) {
+                    alert(args.errors[error].errors)
+                    
+                }
+            });
+            
+        }
+    }
+
+</script>

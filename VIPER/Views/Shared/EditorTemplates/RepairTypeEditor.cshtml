@@ -1,0 +1,11 @@
+﻿@model VIPER.Models.ViewModel.RepairTypeViewModel
+
+@(Html.Kendo().DropDownList().Name("RepairType")
+    .OptionLabel("Select...")
+    .DataTextField("Name")
+    .DataValueField("RepairTypeID")
+    .DataSource(d => d
+        .Read(r => r.Action("JSONRepairType", "Admin").Type(HttpVerbs.Post))
+    )
+)
+

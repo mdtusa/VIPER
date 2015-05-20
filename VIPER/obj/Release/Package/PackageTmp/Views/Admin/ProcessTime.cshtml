@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "Process Time";
+}
+
+<h2>Process</h2>
+<br />
+
+  
+
+    @(Html.Kendo().Grid<VIPER.Models.ViewModel.ProcessTimeViewModel>().Name("ProcessTime").Columns(c =>
+    {
+        c.Bound(p => p.RepairType).ClientTemplate("#=RepairType.Name#").EditorTemplateName("RepairTypeEditor").Title("Repair Type").Width(150);
+        c.Bound(p => p.Size).ClientTemplate("#=Size.Name#").EditorTemplateName("SizeEditor").Title("Size").Width(150);
+        c.Bound(p => p.DisassTime).Title("Dis-assembly").Width(100);
+        c.Bound(p => p.CleanTime).Title("Clean").Width(100);
+        c.Bound(p => p.InspectTime).Title("Inspect").Width(100);
+        c.Bound(p => p.AssembleTime).Title("Assemble").Width(100);
+        c.Bound(p => p.AddWorksTime).Title("Additional Works").Width(100);
+        c.Bound(p => p.PaintTime).Title("Paint").Width(100);
+        c.Bound(p => p.PackagingTime).Title("Packaging").Width(100);
+        c.Command(command => { command.Edit(); command.Destroy(); }).Width(172);
+    })
+    .ToolBar(t => t.Create())
+    .DataSource(d => d
+        .Ajax()
+        .Create(create => create.Action("Process_Create", "Admin"))
+        .Read(read => read.Action("Process_Read", "Admin"))
+        .Update(update => update.Action("Process_Update", "Admin"))
+        .Destroy(destroy => destroy.Action("Process_Destroy", "Admin"))
+        .PageSize(10)
+        .Events(events => events.Error("error_handler"))
+        .Model(m =>
+        {
+            m.Id(p => p.DisassProcTimeID);
+            m.Field(p => p.RepairType).DefaultValue( new VIPER.Models.ViewModel.RepairTypeViewModel()); 
+            m.Field(p => p.Size).DefaultValue(new  VIPER.Models.ViewModel.SizeViewModel());    
+        })
+    )
+    .Pageable()
+    .Sortable()
+    .Editable(e => e.Mode(GridEditMode.InLine))
+    )
+
+    <script type="text/javascript">
+        function error_handler(e) {
+            if (e.errors) {
+                var message = "Errors:\n";
+                $.each(e.errors, function (key, value) {
+                    if ('errors' in value) {
+                        $.each(value.errors, function () {
+                            message += this + "\n";
+                        });
+                    }
+                });
+                alert(message);
+            }
+        }
+
+        function filterSizes() {
+            return {
+                RepairTypeID: $("#RepairType").val()
+            };
+        }
+    </script>

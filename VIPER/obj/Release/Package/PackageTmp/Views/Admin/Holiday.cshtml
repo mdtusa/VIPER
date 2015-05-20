@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "Holiday";
+}
+
+<style>
+    #Holiday {
+        width: 740px;
+    }
+</style>
+
+<h2>Holiday Schedule</h2>
+<br />
+
+@(Html.Kendo().Grid<VIPER.Models.ViewModel.HolidayViewModel>().Name("Holiday").Columns(c =>
+{
+    c.Bound(h => h.Name).Width(350);
+    c.Bound(h => h.Date).Width(200).EditorTemplateName("Date").Format("{0:MM/dd/yyyy}"); 
+    c.Command(command => { command.Edit(); command.Destroy(); }).Width(190);
+})
+.DataSource(d => d
+    .Ajax()
+    .Create(create => create.Action("Holiday_Create", "Admin"))
+    .Read(read => read.Action("Holiday_Read", "Admin"))
+    .Update(update => update.Action("Holiday_Update", "Admin"))
+    .Destroy(destroy => destroy.Action("Holiday_Destroy", "Admin"))
+    .PageSize(20)
+    .Model(m =>
+    {
+        m.Id(h => h.HolidayID);
+    })
+
+)
+.Sortable()
+.Editable(e => e.Mode(GridEditMode.InLine))
+.ToolBar(t => t.Create())
+)
+

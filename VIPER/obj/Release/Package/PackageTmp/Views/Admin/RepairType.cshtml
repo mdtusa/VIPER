@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "RepairType";
+}
+
+<style>
+    #RepairType {
+        width: 540px;
+    }
+</style>
+
+<h2>Repair Type</h2>
+<br />
+
+@(Html.Kendo().Grid<VIPER.Models.ViewModel.RepairTypeViewModel>().Name("RepairType").Columns(c =>
+{
+    c.Bound(r => r.Name).Width(350);
+    c.Command(command => { command.Edit(); command.Destroy(); }).Width(190);
+})
+.DataSource(d => d
+    .Ajax()
+    .Create(create => create.Action("RepairType_Create", "Admin"))
+    .Read(read => read.Action("RepairType_Read", "Admin"))
+    .Update(update => update.Action("RepairType_Update", "Admin"))
+    .Destroy(destroy => destroy.Action("RepairType_Destroy", "Admin"))
+    .PageSize(10)
+    .Model(m =>
+    {
+        m.Id(rt => rt.RepairTypeID);
+    })
+    
+)
+.Sortable()
+.Editable(e => e.Mode(GridEditMode.InLine))
+.ToolBar(t => t.Create())
+)
+

@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "Size";
+}
+
+<style>
+    #SizeGrid {
+        width: 610px;
+    }
+</style>
+
+<h2>Size</h2>
+<br />
+
+@(Html.Kendo().Grid<VIPER.Models.ViewModel.SizeViewModel>().Name("SizeGrid").Columns(c =>
+{
+    c.Bound(s => s.Name).Width(250);
+    c.Bound(s => s.RepairType).ClientTemplate("#=RepairType.Name#").EditorTemplateName("RepairTypeEditor").Title("Repair Type").Width(170);
+    c.Command(command => { command.Edit(); command.Destroy(); }).Width(190);
+})
+.DataSource(d => d
+    .Ajax()
+    .Create(create => create.Action("Size_Create", "Admin"))
+    .Read(read => read.Action("Size_Read", "Admin"))
+    .Update(update => update.Action("Size_Update", "Admin"))
+    .Destroy(destroy => destroy.Action("Size_Destroy", "Admin"))
+    .PageSize(10)
+    .Model(m =>
+    {
+        m.Id(s => s.SizeID);
+        m.Field(s => s.RepairType).DefaultValue(new VIPER.Models.ViewModel.RepairTypeViewModel()); 
+    })
+)
+.Pageable()
+.Sortable()
+.Editable(e => e.Mode(GridEditMode.InLine))
+.ToolBar(t => t.Create())
+)

@@ -1,0 +1,10 @@
+﻿@model VIPER.Models.ViewModel.HourViewModel
+
+@(Html.Kendo().DropDownList().Name("Hour")
+    .OptionLabel("Select...")
+    .DataTextField("Name")
+    .DataValueField("HourID")
+    .DataSource(d => d
+        .Read(r => r.Action("JSONHour", "Admin").Type(HttpVerbs.Post))
+    )
+)

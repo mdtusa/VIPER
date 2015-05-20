@@ -1,0 +1,21 @@
+﻿@model VIPER.Models.ViewModel.SizeViewModel
+
+@(Html.Kendo().DropDownList().Name("Size")
+    .OptionLabel("Select...")
+    .DataTextField("Name")
+    .DataValueField("SizeID")
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action("JSONSize", "Admin")
+                .Data("filterSizes");
+        })
+        .ServerFiltering(true);
+    })
+    .Enable(false)
+    .AutoBind(false)
+    .CascadeFrom("RepairType")
+)
+
+
