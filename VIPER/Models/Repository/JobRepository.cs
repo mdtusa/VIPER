@@ -453,6 +453,8 @@ namespace VIPER.Models.Repository
                     PlannedTime = jp.PlannedTime,
                     ActualTime = jp.ActualTime,
                     Difference = jp.PlannedTime - jp.ActualTime,
+                    Note = jp.Note,
+                    ReworkTime = jp.ReworkTime,
                     ImageURL = (jp.PlannedTime - jp.ActualTime) > 0 ? "check-icon-red.png" : "check-icon-green.png",
                     ScheduleWeek = jp.ScheduleWeek,
                     Status = jp.Status
@@ -466,6 +468,8 @@ namespace VIPER.Models.Repository
             {
                 entity.PlannedTime = jobProcess.PlannedTime;
                 entity.ActualTime = jobProcess.ActualTime;
+                entity.ReworkTime = jobProcess.ReworkTime;
+                entity.Note = jobProcess.Note;
                 entity.ScheduleWeek = jobProcess.ScheduleWeek;
                 jobProcess.Difference = jobProcess.PlannedTime - jobProcess.ActualTime;
                 context.SaveChanges();

@@ -30,8 +30,6 @@ namespace VIPER.Models
 
         public DbSet<Employee> Employees { get; set; }
 
-        public DbSet<Area> Areas { get; set; }
-
         public DbSet<JobProcess> JobProcesses { get; set; }
 
         public DbSet<ProcessTime> ProcessTimes { get; set; }
@@ -50,6 +48,7 @@ namespace VIPER.Models
             modelBuilder.Entity<Job>().Property(j => j.CompletionDate).IsOptional();
             modelBuilder.Entity<Job>().Property(j => j.PromiseDate).IsOptional();
             modelBuilder.Entity<Job>().Property(j => j.SchedulePriority).IsOptional();
+            modelBuilder.Entity<JobProcess>().Property(j => j.ReworkTime).IsOptional();
 
 
         }

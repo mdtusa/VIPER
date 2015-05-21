@@ -129,8 +129,10 @@
                             columns.Bound(jp => jp.ProcessName).Width(150);
                             columns.Bound(jp => jp.PlannedTime).Title("Planned").Width(100);
                             columns.Bound(jp => jp.ActualTime).Title("Actual").Width(100);
+                            columns.Bound(jp => jp.ReworkTime).Title("Rework").Width(100);
                             columns.Bound(jp => jp.Difference).Width(100); 
                             columns.Bound(jp => jp.ScheduleWeek).Width(160);
+                            columns.Bound(jp => jp.Note).Width(300);
                         })
                         .ToolBar(toolbar =>
                         {
@@ -150,7 +152,7 @@
                                 m.Field(jp => jp.Difference).Editable(false);
                             })
                         )
-                        .HtmlAttributes(new { style = "width:650px;" })
+                        .HtmlAttributes(new { style = "width:1010px;" })
                         .ToClientTemplate())
                     </text>
                     );         

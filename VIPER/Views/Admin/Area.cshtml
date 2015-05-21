@@ -25,8 +25,8 @@
         views.DayView();
         views.WorkWeekView();
         views.WeekView();
-        views.MonthView(mv => mv.Selected(true));
-        views.AgendaView();
+        views.MonthView();
+        views.AgendaView(av => av.Selected(true));
         views.TimelineView();
     })
     .Resources(resource =>

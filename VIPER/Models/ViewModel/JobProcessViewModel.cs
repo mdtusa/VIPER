@@ -32,5 +32,9 @@ namespace VIPER.Models.ViewModel
         public string ProcessName { get; set; }
 
         public string ImageURL { get; set; }
+
+        public string Note { get; set; }
+
+        public decimal ReworkTime { get; set; }
     }
 }

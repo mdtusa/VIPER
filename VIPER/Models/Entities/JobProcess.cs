@@ -31,6 +31,10 @@ namespace VIPER.Models.Entities
         public DateTime Start {get; set;}
 
         public DateTime End { get; set; }
+
+        public string Note { get; set; }
+
+        public decimal ReworkTime { get; set; }
         
         [ScriptIgnore]
         public virtual Job Job { get; set; }
@@ -40,8 +44,6 @@ namespace VIPER.Models.Entities
 
         public virtual List<EmployeeProcess> EmployeeProcesses { get; set; }
 
-        public int AreaTypeID { get; set; }
-
-        public virtual Area Area { get; set; }
+        
     }
 }

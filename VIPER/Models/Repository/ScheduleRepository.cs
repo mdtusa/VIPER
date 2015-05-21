@@ -25,7 +25,8 @@ namespace VIPER.Models.Repository
 
         public IQueryable<ScheduleViewModel> GetAllJobs()
         {
-            IList<Job> jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true).Where(j => j.CompletionDate > DateTime.Today).ToList();
+            ChangeJobScheduleStatus();
+            IList<Job> jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true).ToList();
             int parentID = 0,currentID,previousID = 0 ;
 
             foreach (Job j in jobs)
@@ -79,6 +80,21 @@ namespace VIPER.Models.Repository
             }
             return scheduleViewModel.AsQueryable();
         }
+
+
+        public void ChangeJobScheduleStatus()
+        {
+            var jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true);
+            foreach(var job in jobs)
+            {
+                if (job.PromiseDate < DateTime.Today)
+                {
+                    job.JobSchedule = false;
+                }
+            }
+            context.SaveChanges();
+        }
+
 
         public virtual void Update(ScheduleViewModel task, ModelStateDictionary modelState)
         {
