@@ -9,8 +9,9 @@ using System.Web.Mvc;
 
 namespace VIPER.Models.Repository
 {
-    public class ScheduleRepository
+    public class ScheduleRepository : IDisposable
     {
+    
         private VIPERDbContext context;
 
         public ScheduleRepository()
@@ -56,7 +57,7 @@ namespace VIPER.Models.Repository
                 scheduleParent.OrderId = 0;
                 scheduleParent.ParentID = null;
                 scheduleParent.Start = j.StartDate.GetValueOrDefault();
-                scheduleParent.End = j.CompletionDate.GetValueOrDefault();
+                scheduleParent.End = j.PromiseDate.GetValueOrDefault();
                 scheduleParent.SchedulePriority = 0;
                 scheduleViewModel.Add(scheduleParent);
                       
@@ -119,7 +120,7 @@ namespace VIPER.Models.Repository
                         jp.Start = nextStart;
                         jp.End = nextStart = GetNextProcessStartTime(jp.Start, (Double)jp.PlannedTime);
                         if (jp.Process.Step == 7)
-                            job.CompletionDate = jp.End;
+                            job.PromiseDate = jp.End;
                     }
                     
                 }

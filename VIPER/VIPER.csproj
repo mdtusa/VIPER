@@ -40,6 +40,8 @@
         </ObjectGroup>
       </Objects>
     </PublishDatabaseSettings>
+    <ExcludeGeneratedDebugSymbol>false</ExcludeGeneratedDebugSymbol>
+    <FilesToIncludeForPublish>OnlyFilesToRunTheApp</FilesToIncludeForPublish>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -258,6 +260,18 @@
     <Compile Include="Migrations\201505051726588_AddSchedule.cs" />
     <Compile Include="Migrations\201505051726588_AddSchedule.Designer.cs">
       <DependentUpon>201505051726588_AddSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505221648028_PackagingInJob.cs" />
+    <Compile Include="Migrations\201505221648028_PackagingInJob.Designer.cs">
+      <DependentUpon>201505221648028_PackagingInJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505221755485_Packaging1InJob.cs" />
+    <Compile Include="Migrations\201505221755485_Packaging1InJob.Designer.cs">
+      <DependentUpon>201505221755485_Packaging1InJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505222317541_SetReworktoNull.cs" />
+    <Compile Include="Migrations\201505222317541_SetReworktoNull.Designer.cs">
+      <DependentUpon>201505222317541_SetReworktoNull.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Entities\Area.cs" />
@@ -607,6 +621,7 @@
     <Content Include="Content\kendo\2014.3.1316\fonts\DejaVu\LICENSE" />
     <Content Include="Content\kendo\2014.3.1316\images\kendoui.ttf" />
     <Content Include="Content\kendo\2014.3.1316\images\kendoui.woff" />
+    <None Include="Properties\PublishProfiles\VIPERDebug.pubxml" />
     <None Include="Properties\PublishProfiles\VIPERPublish.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
@@ -1019,6 +1034,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201505051726588_AddSchedule.resx">
       <DependentUpon>201505051726588_AddSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505221648028_PackagingInJob.resx">
+      <DependentUpon>201505221648028_PackagingInJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505221755485_Packaging1InJob.resx">
+      <DependentUpon>201505221755485_Packaging1InJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505222317541_SetReworktoNull.resx">
+      <DependentUpon>201505222317541_SetReworktoNull.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

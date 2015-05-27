@@ -34,7 +34,7 @@ namespace VIPER.Models.Entities
 
         public string Note { get; set; }
 
-        public decimal ReworkTime { get; set; }
+        public decimal? ReworkTime { get; set; }
         
         [ScriptIgnore]
         public virtual Job Job { get; set; }

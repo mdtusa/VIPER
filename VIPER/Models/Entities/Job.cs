@@ -46,7 +46,7 @@ namespace VIPER.Models.Entities
 
         public decimal PlannedThirdPartyCost { get; set; }
 
-        public decimal InvoicedTotal { get; set; }
+        public decimal? InvoicedTotal { get; set; }
 
         public int? SchedulePriority { get; set; }
 
@@ -65,15 +65,12 @@ namespace VIPER.Models.Entities
         [NotMapped]
         public decimal ConsumableCost {get; set;}
 
-        [NotMapped]
-        public decimal PackagingCost { get; set; }
-
+        public decimal? PackagingCost { get; set; }
 
         [NotMapped]
         public decimal PlannedConsumable { get; set; }
 
-        [NotMapped]
-        public decimal PlannedPackaging { get; set; }
+        public decimal? PlannedPackaging { get; set; }
 
         public decimal? TotalJobCost { get; set; }
 

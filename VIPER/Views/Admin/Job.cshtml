@@ -96,7 +96,7 @@
                                 columns.Bound(j => j.StartDate).Width(200).EditorTemplateName("DateTime").Format("{0:MM/dd/yyyy h:mm tt}");
                                 columns.Bound(j => j.PromiseDate).Width(120).EditorTemplateName("Date").Format("{0:MM/dd/yyyy}");
                                 columns.Bound(j => j.ShipDate).Width(120).EditorTemplateName("Date").Format("{0:MM/dd/yyyy}");
-                                columns.Bound(j => j.CompletionDate).Width(200).EditorTemplateName("DateTime").Format("{0:MM/dd/yyyy h:mm tt}");
+                                columns.Bound(j => j.CompletionDate).Width(120).EditorTemplateName("DateTime").Format("{0:MM/dd/yyyy}");
                                 columns.Bound(j => j.TurnTime).Width(100);
                             })
                             .ToolBar(toolbar =>
@@ -203,12 +203,10 @@
     }
 
     function Grid1Edit(e) {
-        if (e.model.PivotJobID == 5 || e.model.PivotJobID == 6 || e.model.PivotJobID == 7 || e.model.PivotJobID == 8) {
+        if (e.model.PivotJobID == 5 || e.model.PivotJobID == 7 || e.model.PivotJobID == 8) {
             this.closeCell();
         }
     }
-
-    
 
     function filterSizes() {
         return {
@@ -218,10 +216,10 @@
 
     function ChangeCellColor(Difference) {
         if (Difference > 0) {
-            return "<div style='background: green'>" + Difference + " </div>";
+            return "<div style='color: green;font-weight: bold'>" + Difference + " </div>";
         }
         else {
-            return "<div style='background: red'>" + Difference + " </div>";
+            return "<div style='color: red;font-weight: bold'>" + Difference + " </div>";
         }
-        }   
+    }   
 </script>

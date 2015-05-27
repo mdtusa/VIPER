@@ -34,8 +34,8 @@ namespace VIPER.Models.Repository
                     job.JobNumber = j.JobNumber;
                     job.Quantity = j.Quantity;
                     job.OpenDate = j.OpenDate;
-                    if (j.InvoicedTotal != null && j.TotalJobCost.GetValueOrDefault() != null)
-                        job.ActualProfit = j.InvoicedTotal - j.TotalJobCost.GetValueOrDefault();
+                    if (j.InvoicedTotal.HasValue && j.TotalJobCost.HasValue)
+                        job.ActualProfit = j.InvoicedTotal.GetValueOrDefault() - j.TotalJobCost.GetValueOrDefault();
                     else
                         job.ActualProfit = 0;
                     
@@ -185,7 +185,7 @@ namespace VIPER.Models.Repository
 
         public List<JobCostViewModel> GetJobCost(int jobID)
         {
-            var job = context.Jobs.Where(j => j.JobID == jobID).Include(j => j.JobProcesses).ToList();
+            var job = context.Jobs.Include(j => j.JobProcesses).First(j => j.JobID == jobID);
 
             List<JobCostViewModel> pivotJobs = new List<JobCostViewModel>();
 
@@ -193,8 +193,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 1;
             pj.JobID = jobID;
             pj.CostType = "Spare Parts";
-            pj.Planned = job[0].PlannedSparePartsCost;
-            pj.Actual = job[0].SparePartsCost;
+            pj.Planned = job.PlannedSparePartsCost;
+            pj.Actual = job.SparePartsCost;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -202,8 +202,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 2;
             pj.JobID = jobID;
             pj.CostType = "Third Party";
-            pj.Planned = job[0].PlannedThirdPartyCost;
-            pj.Actual = job[0].ThirdPartyCost;
+            pj.Planned = job.PlannedThirdPartyCost;
+            pj.Actual = job.ThirdPartyCost;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -211,8 +211,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 3;
             pj.JobID = jobID;
             pj.CostType = "Shipping";
-            pj.Planned = job[0].PlannedShippingCost;
-            pj.Actual = job[0].ShippingCost;
+            pj.Planned = job.PlannedShippingCost;
+            pj.Actual = job.ShippingCost;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -220,8 +220,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 4;
             pj.JobID = jobID;
             pj.CostType = "Duties";
-            pj.Planned = job[0].PlannedDutiesCost;
-            pj.Actual = job[0].DutiesCost;
+            pj.Planned = job.PlannedDutiesCost;
+            pj.Actual = job.DutiesCost;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -230,8 +230,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 5;
             pj.JobID = jobID;
             pj.CostType = "Labor";
-            pj.Planned = job[0].JobProcesses.Sum(jp => jp.PlannedTime) * 93;
-            pj.Actual =  job[0].JobProcesses.Sum(jp => jp.ActualTime) * 93;
+            pj.Planned = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+            pj.Actual =  job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -239,8 +239,14 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 6;
             pj.JobID = jobID;
             pj.CostType = "Packaging";
-            pj.Planned = (106 * job[0].Quantity);
-            pj.Actual = (106 * job[0].Quantity);
+            if (job.PlannedPackaging == 0 || job.PlannedPackaging == null)
+                pj.Planned = (106 * job.Quantity);
+            else
+                pj.Planned = job.PlannedPackaging.GetValueOrDefault();
+            if (job.PackagingCost == 0 || job.PackagingCost == null)
+                pj.Actual = (106 * job.Quantity);
+            else
+                pj.Actual = job.PackagingCost.GetValueOrDefault();
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -248,8 +254,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 7;
             pj.JobID = jobID;
             pj.CostType = "Consumable";
-            pj.Planned = ((pivotJobs[5].Planned + pivotJobs[4].Planned + job[0].PlannedDutiesCost + job[0].PlannedShippingCost + job[0].PlannedThirdPartyCost + job[0].PlannedSparePartsCost)) * ((Decimal)(0.0075));
-            pj.Actual = ((pivotJobs[5].Actual + pivotJobs[4].Actual + job[0].DutiesCost + job[0].ShippingCost + job[0].ThirdPartyCost + job[0].SparePartsCost)) * ((Decimal)(0.0075));
+            pj.Planned = ((pivotJobs[5].Planned + pivotJobs[4].Planned + job.PlannedDutiesCost + job.PlannedShippingCost + job.PlannedThirdPartyCost + job.PlannedSparePartsCost)) * ((Decimal)(0.0075));
+            pj.Actual = ((pivotJobs[5].Actual + pivotJobs[4].Actual + job.DutiesCost + job.ShippingCost + job.ThirdPartyCost + job.SparePartsCost)) * ((Decimal)(0.0075));
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -258,7 +264,7 @@ namespace VIPER.Models.Repository
             pj.JobID = jobID;
             pj.CostType = "Total Cost";
             pj.Planned = pivotJobs[0].Planned + pivotJobs[1].Planned + pivotJobs[2].Planned + pivotJobs[3].Planned + pivotJobs[4].Planned + pivotJobs[5].Planned + pivotJobs[6].Planned;
-            pj.Actual = job[0].TotalJobCost.GetValueOrDefault();//pivotJobs[0].Actual + pivotJobs[1].Actual + pivotJobs[2].Actual + pivotJobs[3].Actual + pivotJobs[4].Actual + pivotJobs[5].Actual + pivotJobs[6].Actual;
+            pj.Actual = job.TotalJobCost.GetValueOrDefault();
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -267,18 +273,9 @@ namespace VIPER.Models.Repository
             pj.JobID = jobID;
             pj.CostType = "Invoiced Total";
             pj.Planned = 0;
-            pj.Actual = job[0].InvoicedTotal;
+            pj.Actual = job.InvoicedTotal.GetValueOrDefault();
             pj.Difference = 0;
             pivotJobs.Add(pj);
-
-            //pj = new JobCostViewModel();
-            //pj.PivotJobID = 9;
-            //pj.JobID = jobID;
-            //pj.CostType = "Profit";
-            //pj.Planned = 0;
-            //pj.Actual = pivotJobs[7].Actual - pivotJobs[6].Actual;
-            //pj.Difference = 0;
-            //pivotJobs.Add(pj);
 
             return pivotJobs;
         }
@@ -286,77 +283,94 @@ namespace VIPER.Models.Repository
         public void UpdateJobCost(IList<JobCostViewModel> jobCost)
         {
             int jobID = jobCost[0].JobID;
-            var jobs = context.Jobs.Where(j => j.JobID == jobID ).Include(j => j.JobProcesses).ToList();
-            Job entity = jobs[0];
+            var job = context.Jobs.Include(j => j.JobProcesses).First(j => j.JobID == jobID );
 
-            if (entity != null)
+
+            if (job != null)
             {
                 foreach (JobCostViewModel jc in jobCost)
                 {
                     if (jc.PivotJobID == 1)
                     {
-                        entity.PlannedSparePartsCost = jc.Planned;
-                        entity.SparePartsCost = jc.Actual;
+                        job.PlannedSparePartsCost = jc.Planned;
+                        job.SparePartsCost = jc.Actual;
                         jc.Difference = jc.Planned - jc.Actual;
-                    }
-                    if (jc.PivotJobID == 2)
-                    {
-                        entity.PlannedThirdPartyCost = jc.Planned;
-                        entity.ThirdPartyCost = jc.Actual;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
-                    if (jc.PivotJobID == 3)
-                    {
-                        entity.PlannedShippingCost = jc.Planned;
-                        entity.ShippingCost = jc.Actual;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
-                    if (jc.PivotJobID == 4)
-                    {
-                        entity.PlannedDutiesCost = jc.Planned;
-                        entity.DutiesCost = jc.Actual;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
 
-                    if (jc.PivotJobID == 5)
+                        var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
+                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+
+                        var consumable = subTotal * (Decimal)0.0075;
+                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+
+                        job.TotalJobCost = subTotal + consumable;
+                    }
+                    else if (jc.PivotJobID == 2)
                     {
-                        jc.Planned = entity.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
-                        jc.Actual = entity.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        job.PlannedThirdPartyCost = jc.Planned;
+                        job.ThirdPartyCost = jc.Actual;
+                        jc.Difference = jc.Planned - jc.Actual;
+
+                        var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
+                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+
+                        var consumable = subTotal * (Decimal)0.0075;
+                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+
+                        job.TotalJobCost = subTotal + consumable;
+                    }
+                    else if (jc.PivotJobID == 3)
+                    {
+                        job.PlannedShippingCost = jc.Planned;
+                        job.ShippingCost = jc.Actual;
+                        jc.Difference = jc.Planned - jc.Actual;
+
+                        var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
+                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+
+                        var consumable = subTotal * (Decimal)0.0075;
+                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+
+                        job.TotalJobCost = subTotal + consumable;
+                    }
+                    else if (jc.PivotJobID == 4)
+                    {
+                        job.PlannedDutiesCost = jc.Planned;
+                        job.DutiesCost = jc.Actual;
+                        jc.Difference = jc.Planned - jc.Actual;
+
+                        var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
+                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+
+                        var consumable = subTotal * (Decimal)0.0075;
+                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+
+                        job.TotalJobCost = subTotal + consumable;
+                    }
+                    else if (jc.PivotJobID == 6)
+                    {
+                        job.PlannedPackaging = jc.Planned;
+                        job.PackagingCost = jc.Actual;
                         jc.Difference = jc.Planned - jc.Actual;
                     }
-
-                    if (jc.PivotJobID == 6)
-                    {
-                        jc.Planned = 106 * entity.Quantity;
-                        jc.Actual = 106 * entity.Quantity;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
-
-                    if (jc.PivotJobID == 7)
-                    {
-                        jc.Planned = (jobCost[0].Planned + jobCost[1].Planned + jobCost[2].Planned + jobCost[3].Planned + jobCost[4].Planned + jobCost[5].Planned) * (Decimal)0.0075;
-                        jc.Actual = (jobCost[0].Actual + jobCost[1].Actual + jobCost[2].Actual + jobCost[3].Actual + jobCost[4].Actual + jobCost[5].Actual) * (Decimal)0.0075;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
-
-                   
-                    if (jc.PivotJobID == 8)
-                    {
-                        jc.Planned = jobCost[0].Planned + jobCost[1].Planned + jobCost[2].Planned + jobCost[3].Planned + jobCost[4].Planned + jobCost[5].Planned + jobCost[6].Planned;
-                        entity.TotalJobCost = jc.Actual = jobCost[0].Actual + jobCost[1].Actual + jobCost[2].Actual + jobCost[3].Actual + jobCost[4].Actual + jobCost[5].Actual + jobCost[6].Actual;
-                        jc.Difference = jc.Planned - jc.Actual;
-                    }
-
-
-                    if (jc.PivotJobID == 9)
+                    else if (jc.PivotJobID == 9)
                     {
                         jc.Planned = 0;
-                        entity.InvoicedTotal = jc.Actual;
+                        job.InvoicedTotal = jc.Actual;
                         jc.Difference = 0;
-                    }
-                    
+                    }         
                 }
-
                 context.SaveChanges();
             }
         }
@@ -410,14 +424,15 @@ namespace VIPER.Models.Repository
                 if(j.ReceivedDate.HasValue)
                     entity.ReceivedDate = j.ReceivedDate.GetValueOrDefault();
 
-                if (j.StartDate.HasValue)
+
+                if (j.StartDate.HasValue && !entity.StartDate.HasValue)
                 {
                     entity.StartDate = j.StartDate.GetValueOrDefault();
                     entity.JobSchedule = true;
                     DateTime nextStart = DateTime.Now;
 
                     foreach (JobProcess jp in entity.JobProcesses)
-                    {  
+                    {
                         if (jp.Process.Step == 1)
                             jp.Start = j.StartDate.GetValueOrDefault();
                         else
@@ -425,12 +440,17 @@ namespace VIPER.Models.Repository
 
                         jp.End = nextStart = GetNextProcessStartTime(jp.Start, (Double)jp.PlannedTime);
                         if (jp.Process.Step == 7)
-                            entity.CompletionDate = j.CompletionDate =  jp.End;    
+                            entity.PromiseDate = j.PromiseDate = jp.End;
                     }
                 }
+                else if (j.StartDate.HasValue)
+                    entity.StartDate = j.StartDate.GetValueOrDefault();
 
                 if(j.ShipDate.HasValue)
                     entity.ShipDate = j.ShipDate.GetValueOrDefault();
+
+                if (j.CompletionDate.HasValue)
+                    entity.CompletionDate = j.CompletionDate.GetValueOrDefault();
 
                 if(j.PromiseDate.HasValue)
                     entity.PromiseDate = j.PromiseDate.GetValueOrDefault();
@@ -454,7 +474,7 @@ namespace VIPER.Models.Repository
                     ActualTime = jp.ActualTime,
                     Difference = jp.PlannedTime - jp.ActualTime,
                     Note = jp.Note,
-                    ReworkTime = jp.ReworkTime,
+                    ReworkTime = jp.ReworkTime.GetValueOrDefault(),
                     ImageURL = (jp.PlannedTime - jp.ActualTime) > 0 ? "check-icon-red.png" : "check-icon-green.png",
                     ScheduleWeek = jp.ScheduleWeek,
                     Status = jp.Status

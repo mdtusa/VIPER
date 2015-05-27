@@ -48,6 +48,8 @@ namespace VIPER.Models
             modelBuilder.Entity<Job>().Property(j => j.CompletionDate).IsOptional();
             modelBuilder.Entity<Job>().Property(j => j.PromiseDate).IsOptional();
             modelBuilder.Entity<Job>().Property(j => j.SchedulePriority).IsOptional();
+            modelBuilder.Entity<Job>().Property(j => j.PackagingCost).IsOptional();
+            modelBuilder.Entity<Job>().Property(j => j.PlannedPackaging).IsOptional();
             modelBuilder.Entity<JobProcess>().Property(j => j.ReworkTime).IsOptional();
 
 

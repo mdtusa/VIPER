@@ -10,6 +10,7 @@ namespace VIPER.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;
         }
 
         protected override void Seed(VIPER.Models.VIPERDbContext context)
