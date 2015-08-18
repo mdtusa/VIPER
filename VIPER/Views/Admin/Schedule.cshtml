@@ -11,17 +11,19 @@
     {
         columns.Bound(c => c.TaskID).Title("ID").Width(50);
         columns.Bound("title").Editable(false).Sortable(true);
-        columns.Resources("resources").Editable(true).Title("Assigned Resources");
+        columns.Resources("resources").Editable(true).Title("Resources");
     })
     .Views(views =>
     {
-        views.DayView();
-        views.WeekView(weekView => weekView.Selected(true));
-        views.MonthView();
+        views.DayView(d => d.TimeHeaderTemplate("#= kendo.toString(data.start, 'H') #").SlotSize(40.00));
+        views.WeekView(w => w.Selected(true).DayHeaderTemplate("#= (kendo.toString(data.start, 'ddd')).substring(0, 2) #").SlotSize(40.00));
+        views.MonthView(m => m.WeekHeaderTemplate("#= (data.start).getWeek() #").SlotSize(45.00));
+        
     })
     .Height(800)
     .ShowWorkHours(false)
     .ShowWorkDays(false)
+    
     .Snap(false)
     .Events(e => e.MoveEnd("RefreshGantt").Save("RefreshGantt"))
     .DataSource(d => d
@@ -69,9 +71,17 @@
     )
 )
 
+<script type="text/x-kendo-template" id="template">
+   Date(data)
+</script>
 
 <script type="text/javascript">
-   
+
+    $(document).ready(function () {
+        var addButton = $(".k-button.k-button-icontext.k-gantt-create");
+        addButton.hide();  
+    });
+ 
     function RefreshGantt(e)
     {
         var gantt = $("#gantt").getKendoGantt();
@@ -83,9 +93,9 @@
     function error(args) {
         if (args.errors) {
             var gantt = $("#gantt").data("kendoGantt");
-
+           
             gantt.one("dataBinding", function (e) {
-                e.preventDefault();   // cancel grid rebind if error occurs
+                e.preventDefault();   // cancel grid rebind if error occurs     
                 e.sender.assignments.dataSource.read();
 
                 for (var error in args.errors) {
@@ -93,8 +103,13 @@
                     
                 }
             });
-            
+
         }
+    }
+
+    Date.prototype.getWeek = function () {
+        var onejan = new Date(this.getFullYear(), 0, 1);
+        return Math.ceil((((this - onejan) / 86400000) + onejan.getDay() + 1) / 7);
     }
 
 </script>

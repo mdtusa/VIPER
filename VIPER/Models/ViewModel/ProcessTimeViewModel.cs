@@ -15,8 +15,8 @@ namespace VIPER.Models.ViewModel
         public string RepairTypeName { get; set; }
         public string SizeName { get; set; }
 
-        public RepairTypeViewModel RepairType { get; set; }
-        public SizeViewModel Size { get; set; }
+        public RepairType RepairType { get; set; }
+        public Size Size { get; set; }
 
         public Decimal? DisassTime { get; set; }
         public int? DisassProcID { get; set; }
@@ -48,12 +48,12 @@ namespace VIPER.Models.ViewModel
 
         public void CreateTypes()
         {
-            RepairTypeViewModel repairType = new RepairTypeViewModel();
+            RepairType repairType = new RepairType();
             repairType.RepairTypeID = this.RepairTypeID.GetValueOrDefault();
             repairType.Name = this.RepairTypeName;
             this.RepairType = repairType;
 
-            SizeViewModel size = new SizeViewModel();
+            Size size = new Size();
             size.SizeID = this.SizeID.GetValueOrDefault();
             size.Name = this.SizeName;
             this.Size = size;

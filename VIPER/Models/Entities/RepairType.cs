@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Script.Serialization;
 
 namespace VIPER.Models.Entities
 {
@@ -13,10 +14,13 @@ namespace VIPER.Models.Entities
         [Required(ErrorMessage = "Please enter a Repair Type name")]
         public string Name { get; set; }
 
-        //public virtual List<Size> Sizes { get; set; }
+        [ScriptIgnore]
+        public virtual List<Size> Sizes { get; set; }
 
-        //public virtual List<ProcessTime> ProcessTimes { get; set; }
+        [ScriptIgnore]
+        public virtual List<ProcessTime> ProcessTimes { get; set; }
 
-        //public virtual List<Job> Jobs { get; set; }
+        [ScriptIgnore]
+        public virtual List<Job> Jobs { get; set; }
     }
 }

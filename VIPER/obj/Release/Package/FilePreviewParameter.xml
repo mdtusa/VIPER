@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <parameters>
   <parameter name="IIS Web Application Name" description="" value="Default Web Site/Viper" tags="IisApp">
-    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\aprasla\\Documents\\Visual\ Studio\ 2013\\Projects\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp$" />
-    <parameterEntry kind="ProviderPath" scope="setAcl" match="^C:\\Users\\aprasla\\Documents\\Visual\ Studio\ 2013\\Projects\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp$" />
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\aprasla\\Documents\\GitHub\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp$" />
+    <parameterEntry kind="ProviderPath" scope="setAcl" match="^C:\\Users\\aprasla\\Documents\\GitHub\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp$" />
   </parameter>
   <parameter name="VIPERDbContext-Web.config Connection String" description="" value="Data Source=DTUSHOUAS003\SQLEXPRESS;Initial Catalog=VIPER;User ID=sa;Password=ViperDB2014" tags="">
-    <parameterEntry kind="XmlFile" scope="C:\\Users\\aprasla\\Documents\\Visual\ Studio\ 2013\\Projects\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='VIPERDbContext']/@connectionString" />
+    <parameterEntry kind="XmlFile" scope="C:\\Users\\aprasla\\Documents\\GitHub\\VIPER\\VIPER\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='VIPERDbContext']/@connectionString" />
   </parameter>
 </parameters>

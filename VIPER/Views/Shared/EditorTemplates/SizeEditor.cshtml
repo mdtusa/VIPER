@@ -1,4 +1,4 @@
-﻿@model VIPER.Models.ViewModel.SizeViewModel
+﻿@model VIPER.Models.Entities.Size
 
 @(Html.Kendo().DropDownList().Name("Size")
     .OptionLabel("Select...")
@@ -9,7 +9,7 @@
         source.Read(read =>
         {
             read.Action("JSONSize", "Admin")
-                .Data("filterSizes");
+                .Data("getRepairTypeID");
         })
         .ServerFiltering(true);
     })
@@ -17,5 +17,4 @@
     .AutoBind(false)
     .CascadeFrom("RepairType")
 )
-
 

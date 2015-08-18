@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Data.Entity;
 using VIPER.Models.Entities;
 using VIPER.Models.ViewModel;
 
@@ -16,21 +17,15 @@ namespace VIPER.Models.Repository
             context = new VIPERDbContext();
         }
 
-        public IList<SizeViewModel> Sizes
+        public IList<Size> Sizes
         {
-            get { return context.Sizes.Select(s => new SizeViewModel() {
-                SizeID = s.SizeID,
-                Name = s.Name,
-                RepairTypeID = s.RepairTypeID,
-                RepairType = new RepairTypeViewModel()
-                {
-                    RepairTypeID = s.RepairType.RepairTypeID,
-                    Name = s.RepairType.Name
-                }
-            }).ToList(); }
+            get
+            {
+                return context.Sizes.Include(s => s.RepairType).ToList();
+            }
         }
 
-        public void Create(SizeViewModel s)
+        public void Create(Size s)
         {
             var size = new Size();
             size.Name = s.Name;
@@ -40,9 +35,9 @@ namespace VIPER.Models.Repository
             s.SizeID = size.SizeID;
         }
 
-        public void Update(SizeViewModel s)
+        public void Update(Size s)
         {
-            Size entity = context.Sizes.Single(size => size.SizeID == s.SizeID);
+            Size entity = context.Sizes.Find(s.SizeID);
             if (entity != null)
             {
                 entity.Name = s.Name;
@@ -51,9 +46,9 @@ namespace VIPER.Models.Repository
             context.SaveChanges();
         }
 
-        public void Destroy(SizeViewModel s)
+        public void Destroy(Size s)
         {
-            Size entity = context.Sizes.Single(size => size.SizeID == s.SizeID);
+            Size entity = context.Sizes.Find(s.SizeID);
             if (entity != null)
                 context.Sizes.Remove(entity);
             context.SaveChanges();

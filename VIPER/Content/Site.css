@@ -1,17 +1,20 @@
 ﻿html {
-    background-color: #e2e2e2;
+    background-color: #fff; /*#e2e2e2;*/
     margin: 0;
     padding: 0;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
     background-color: #fff;
-    border-top: solid 10px #000;
+    /*border-top: solid 10px #000;*/
     color: #333;
     font-size: .85em;
     font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
-    margin: 0;
+    margin: 0 0 30px;
     padding: 0;
+    height: 100%;
 }
 
 a {
@@ -97,19 +100,20 @@ h5, h6 {
 ----------------------------------------------------------*/
 .content-wrapper {
     margin: 0 auto;
-    max-width: 1280px;
+    max-width: 1360px;
 }
 
 #body {
     background-color: white;
     clear: both;
     padding-bottom: 35px;
+   
 }
 
     .main-content {
         /*background: url("../Images/accent.png") no-repeat;*/
         padding-left: 10px;
-        padding-top: 30px;
+        /*padding-top: 30px;*/
     }
 
     .featured + .main-content {
@@ -120,12 +124,64 @@ header .content-wrapper {
     padding-top: 20px; 
 }
 
+#header {
+    border-bottom: 12px solid #E40045;
+    margin: 0 auto;
+    background: #303c49;
+    height: 80px;
+    overflow: hidden;
+}
+
+#header .wrapper {
+    height: 80px;
+}
+
+.wrapper {
+    width: 1580px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#header .logo {
+    float: left;
+    position: relative;
+    top: 9px;
+}
+
+#header .logo_mps {
+    top: 12px;
+    position: relative;
+    left: 13px;
+}
+
+
 footer {
     clear: both;
     background-color: #e2e2e2;
     font-size: .8em;
     height: 100px;
 }
+
+#footer {
+    margin: 0 auto;
+    clear: both;
+    background: #303c49;
+    color: #ccc;
+    font-size: 11px;
+    text-align: center;
+    /*line-height: 30px;*/
+    height: 30px;
+    border-top: 2px solid #E40045;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+
+#main-nav {
+    float: right;
+    padding-right:15px;
+}
+
 
 
 /* site title
@@ -426,11 +482,6 @@ fieldset {
             padding-bottom: 5px;
         }
 
-label {
-    display: block;
-    font-size: 1.2em;
-    font-weight: 600;
-}
 
 label.checkbox {
     display: inline;
@@ -596,6 +647,36 @@ td {
 
 tr.pager td {
     padding: 0 0.25em 0 0;
+}
+/* Job Grid
+----------------------------------------------------------*/
+
+.status_0{
+    background-color: grey;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px; 
+}
+
+.status_1{
+    background-color: yellow;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px; 
+}
+
+.status_2{
+    background-color: #E40045;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px; 
+}
+
+.status_3{
+    background-color: #91B900;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px; 
 }
 
 

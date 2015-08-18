@@ -9,22 +9,23 @@
     .Name("gantt")
     .Columns(columns =>
     {
-        //columns.Bound(c => c.TaskID).Title("ID").Width(50);
+        columns.Bound(c => c.TaskID).Title("ID").Width(50);
         columns.Bound("title").Editable(false).Sortable(true);
-        //columns.Resources("resources").Editable(true).Title("Assigned Resources");
-        //columns.Bound("start").Title("Start Time").Format("{0:MM/dd/yyyy}").Width(100).Editable(true).Sortable(true);
-        //columns.Bound("end").Title("End Time").Format("{0:MM/dd/yyyy}").Width(100).Editable(true).Sortable(true);
+        columns.Resources("resources").Editable(true).Title("Resources");
     })
     .Views(views =>
     {
-        views.DayView();
-        views.WeekView(weekView => weekView.Selected(true));
-        views.MonthView();
+        views.DayView(d => d.TimeHeaderTemplate("#= kendo.toString(data.start, 'H') #").SlotSize(40.00));
+        views.WeekView(w => w.Selected(true).DayHeaderTemplate("#= (kendo.toString(data.start, 'ddd')).substring(0, 2) #").SlotSize(40.00));
+        views.MonthView(m => m.WeekHeaderTemplate("#= (data.start).getWeek() #").SlotSize(45.00));
+        
     })
     .Height(800)
     .ShowWorkHours(false)
     .ShowWorkDays(false)
+    
     .Snap(false)
+    .Events(e => e.MoveEnd("RefreshGantt").Save("RefreshGantt"))
     .DataSource(d => d
         .Model(m =>
         {
@@ -36,49 +37,79 @@
         .Read("ReadJobs", "Admin")
         .Update("UpdateJobs", "Admin")
     )
-        //.DependenciesDataSource(d => d
-        //    .Model(m =>
-        //    {
-        //        m.Id(f => f.DependencyID);
-        //        m.PredecessorId(f => f.PredecessorID);
-        //        m.SuccessorId(f => f.SuccessorID);
-        //        m.Type(f => f.Type);
-        //    })
-        //    .Read("ReadDependencies", "Gantt")
-        //    .Create("CreateDependency", "Gantt")
-        //    .Destroy("DestroyDependency", "Gantt")
-        //    .Update("UpdateDependency", "Gantt")
-        //)
-         .Resources(r => r
-            .Field("resources")
-            .DataColorField("Color")
-            .DataTextField("Name")
-            .DataSource(d => d
-                .Custom()
-                .Schema(s => s
-                    .Model(m => m.Id("ID"))
-                    .Data("Data")
-                )
-                .Transport(t =>
+       
+    .Resources(r => r
+    .Field("resources")
+    .DataColorField("Color")
+    .DataTextField("Name")
+    .DataSource(d => d
+        .Custom()
+        .Schema(s => s
+            .Model(m => m.Id("ID"))
+            .Data("Data")
+        )
+        .Transport(t =>
+        {
+                t.Read("ReadResources", "Admin");
+        })
+    ))
+    .Assignments<VIPER.Models.ViewModel.EmployeeProcessViewModel>(a => a
+        .DataTaskIdField("JobProcessID")
+        .DataResourceIdField("EmployeeID")
+        .DataValueField("Units")
+        .DataSource(d => d
+                .Events(e => e.Error("error"))
+                .Model(m =>
                 {
-                     t.Read("ReadResources", "Admin");
+                    m.Id(f => f.EmployeeProcessID);
                 })
-            )
-         )
-        // .Assignments<ResourceAssignmentViewModel>(a => a
-        //    .DataTaskIdField("TaskID")
-        //    .DataResourceIdField("ResourceID")
-        //    .DataValueField("Units")
-        //    .DataSource(d => d
-        //        .Model(m =>
-        //        {
-        //            m.Id(f => f.ID);
-        //        })
-        //        .Read("ReadAssignments", "Gantt")
-        //        .Create("CreateAssignment", "Gantt")
-        //        .Destroy("DestroyAssignment", "Gantt")
-        //        .Update("UpdateAssignment", "Gantt")
-        //    )
-        //)
+    .Read("ReadAssignments", "Admin")
+    .Create("CreateAssignment", "Admin")
+    .Destroy("DestroyAssignment", "Admin")
+    .Update("UpdateAssignment", "Admin")
+        )
+    )
 )
 
+<script type="text/x-kendo-template" id="template">
+   Date(data)
+</script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var addButton = $(".k-button.k-button-icontext.k-gantt-create");
+        addButton.hide();  
+    });
+ 
+    function RefreshGantt(e)
+    {
+        var gantt = $("#gantt").getKendoGantt();
+        gantt.dataSource.read();
+        //gantt.dependencies.read();
+        
+    }
+
+    function error(args) {
+        if (args.errors) {
+            var gantt = $("#gantt").data("kendoGantt");
+           
+            gantt.one("dataBinding", function (e) {
+                e.preventDefault();   // cancel grid rebind if error occurs     
+                e.sender.assignments.dataSource.read();
+
+                for (var error in args.errors) {
+                    alert(args.errors[error].errors)
+                    
+                }
+            });
+
+        }
+    }
+
+    Date.prototype.getWeek = function () {
+        var onejan = new Date(this.getFullYear(), 0, 1);
+        return Math.ceil((((this - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    }
+
+</script>

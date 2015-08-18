@@ -26,20 +26,17 @@ namespace VIPER.Models.Repository
 
         public IQueryable<ScheduleViewModel> GetAllJobs()
         {
-            ChangeJobScheduleStatus();
-            IList<Job> jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true).ToList();
+            //ChangeJobScheduleStatus();
+            IList<Job> jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.Status == (int)JobStatus.InProcess).ToList();
             int parentID = 0,currentID,previousID = 0 ;
 
             foreach (Job j in jobs)
             {
-                foreach (JobProcess jp in j.JobProcesses)
-                {
-                    currentID = jp.JobProcessID;
-                    if (currentID > previousID)
-                        parentID = currentID;
+                currentID = j.JobProcesses.Max(jp => jp.JobProcessID);
+                if (currentID > previousID)
+                    parentID = currentID;
 
-                    previousID = currentID;
-                }
+                previousID = currentID;  
             }
 
             ScheduleViewModel scheduleParent,schedule;
@@ -56,10 +53,10 @@ namespace VIPER.Models.Repository
                 scheduleParent.Expanded = false;
                 scheduleParent.OrderId = 0;
                 scheduleParent.ParentID = null;
-                scheduleParent.Start = j.StartDate.GetValueOrDefault();
-                scheduleParent.End = j.PromiseDate.GetValueOrDefault();
+                //scheduleParent.Start = j.StartDate.GetValueOrDefault();
+                //scheduleParent.End = j.PromiseDate.GetValueOrDefault();
                 scheduleParent.SchedulePriority = 0;
-                scheduleViewModel.Add(scheduleParent);
+                
                       
                 foreach(JobProcess jp in j.JobProcesses)
                 {
@@ -72,29 +69,37 @@ namespace VIPER.Models.Repository
                     schedule.Summary = true;
                     schedule.Expanded = false;
                     schedule.OrderId = jp.Process.Step;
+            
                     schedule.Start = jp.Start;
+                    //schedule.End = GetNextProcessStartTime(jp.Start, (Double)jp.PlannedTime);
+                   
                     schedule.End = jp.End;
-                    
+                    schedule.PercentComplete = jp.PercentComplete;
+                    if (jp.Process.Step == 1)
+                        scheduleParent.Start = jp.Start;
+                    if (jp.Process.Step == 7)
+                        scheduleParent.End = jp.End;
+
                     scheduleViewModel.Add(schedule);
                 }
-
+                scheduleViewModel.Add(scheduleParent);
             }
             return scheduleViewModel.AsQueryable();
         }
 
 
-        public void ChangeJobScheduleStatus()
-        {
-            var jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true);
-            foreach(var job in jobs)
-            {
-                if (job.PromiseDate < DateTime.Today)
-                {
-                    job.JobSchedule = false;
-                }
-            }
-            context.SaveChanges();
-        }
+        //public void ChangeJobScheduleStatus()
+        //{
+        //    var jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true).ToList();
+        //    foreach(var job in jobs)
+        //    {
+        //        if (job.PromiseDate == null || job.PromiseDate < DateTime.Today)
+        //        {
+        //            job.JobSchedule = false;
+        //        }
+        //    }
+        //    context.SaveChanges();
+        //}
 
 
         public virtual void Update(ScheduleViewModel task, ModelStateDictionary modelState)
@@ -108,8 +113,10 @@ namespace VIPER.Models.Repository
 
                 foreach (JobProcess jp in processesToBeEdited)
                 {
+                    
                     if(jp.Process.Step == task.OrderId)
                     {
+                        jp.PercentComplete = task.PercentComplete;
                         jp.Start = task.Start;
                         jp.End = nextStart = task.End;
                         if (jp.Process.Step == 1)

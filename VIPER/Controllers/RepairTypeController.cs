@@ -21,7 +21,8 @@ namespace VIPER.Controllers
 
         public JsonResult JSONRepairType()
         {
-            return Json(rtRepo.RepairTypes.Select(rt => new { RepairTypeID = rt.RepairTypeID, Name = rt.Name }), JsonRequestBehavior.AllowGet);
+            //return Json(rtRepo.RepairTypes.Select(rt => new { RepairTypeID = rt.RepairTypeID, Name = rt.Name }), JsonRequestBehavior.AllowGet);
+            return Json(rtRepo.RepairTypes, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult RepairType_Read([DataSourceRequest] DataSourceRequest request)
@@ -30,8 +31,13 @@ namespace VIPER.Controllers
             return Json(rtRepo.RepairTypes.ToDataSourceResult(request));
         }
 
+        public ActionResult FilterMenuCustomization_RepairTypes()
+        {
+            return Json(rtRepo.RepairTypes.Select(rt => rt.Name).Distinct(), JsonRequestBehavior.AllowGet);
+        }
+
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult RepairType_Create([DataSourceRequest] DataSourceRequest request, RepairTypeViewModel rt)
+        public ActionResult RepairType_Create([DataSourceRequest] DataSourceRequest request, RepairType rt)
         {
             if (rt != null && ModelState.IsValid)
             {
@@ -42,7 +48,7 @@ namespace VIPER.Controllers
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult RepairType_Update([DataSourceRequest] DataSourceRequest request, RepairTypeViewModel rt)
+        public ActionResult RepairType_Update([DataSourceRequest] DataSourceRequest request, RepairType rt)
         {
             if (rt != null && ModelState.IsValid)
             {
@@ -53,7 +59,7 @@ namespace VIPER.Controllers
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult RepairType_Destroy([DataSourceRequest] DataSourceRequest request, RepairTypeViewModel rt)
+        public ActionResult RepairType_Destroy([DataSourceRequest] DataSourceRequest request, RepairType rt)
         {
             if (rt != null)
             {

@@ -51,7 +51,10 @@ namespace VIPER.Models.Entities
         public int? SchedulePriority { get; set; }
 
         [NotMapped]
-        public decimal EfficiencyRate { get; set; }
+        public decimal Efficiency { get; set; }
+
+        [NotMapped]
+        public decimal Margin { get; set; }
 
         [NotMapped]
         public int TurnTime { get; set; }
@@ -77,29 +80,15 @@ namespace VIPER.Models.Entities
         [NotMapped]
         public decimal ActualProfit { get; set; }
 
-        public Boolean? JobComplete { get; set; }
-
-        public Boolean? JobSchedule { get; set; }
-
-        public int? CustomerID { get; set; }
+        public int? Status { get; set; }
 
         public int? RepairTypeID { get; set; }
 
         public int? SizeID { get; set; }
 
-        public int? HourID { get; set; }
-
-        public int? LocationID { get; set; }
-
-        public virtual Customer Customer { get; set; }
-
         public virtual RepairType RepairType { get; set; }
 
         public virtual Size Size { get; set; }
-
-        public virtual Hour Hour { get; set; }
-
-        public virtual Location Location { get; set; }
 
         public virtual List<JobProcess> JobProcesses { get; set; }
 

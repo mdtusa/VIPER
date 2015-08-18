@@ -11,7 +11,7 @@
 <h2>Repair Type</h2>
 <br />
 
-@(Html.Kendo().Grid<VIPER.Models.ViewModel.RepairTypeViewModel>().Name("RepairType").Columns(c =>
+@(Html.Kendo().Grid<VIPER.Models.Entities.RepairType>().Name("RepairType").Columns(c =>
 {
     c.Bound(r => r.Name).Width(350);
     c.Command(command => { command.Edit(); command.Destroy(); }).Width(190);

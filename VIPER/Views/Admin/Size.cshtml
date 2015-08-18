@@ -12,7 +12,7 @@
 <h2>Size</h2>
 <br />
 
-@(Html.Kendo().Grid<VIPER.Models.ViewModel.SizeViewModel>().Name("SizeGrid").Columns(c =>
+@(Html.Kendo().Grid<VIPER.Models.Entities.Size>().Name("Size").Columns(c =>
 {
     c.Bound(s => s.Name).Width(250);
     c.Bound(s => s.RepairType).ClientTemplate("#=RepairType.Name#").EditorTemplateName("RepairTypeEditor").Title("Repair Type").Width(170);
@@ -28,7 +28,7 @@
     .Model(m =>
     {
         m.Id(s => s.SizeID);
-        m.Field(s => s.RepairType).DefaultValue(new VIPER.Models.ViewModel.RepairTypeViewModel()); 
+        m.Field(s => s.RepairType).DefaultValue(new VIPER.Models.Entities.RepairType()); 
     })
 )
 .Pageable()

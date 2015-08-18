@@ -12,6 +12,8 @@ namespace VIPER.Models.Repository
     {
         private VIPERDbContext context;
 
+        bool disposed = false;
+
         public JobRepository()
         {
             context = new VIPERDbContext();
@@ -21,10 +23,11 @@ namespace VIPER.Models.Repository
         {
             get
             {
-                var jobs = context.Jobs.Include(j => j.RepairType).Include(j => j.Hour).Include(j => j.Size).Include(j => j.JobProcesses);
+                var jobs = context.Jobs.Include(j => j.RepairType).Include(j => j.Size).Include(j => j.JobProcesses).OrderByDescending(j => j.JobID).ToList();
                  
                 JobViewModel job; 
                 List<JobViewModel> jobsViewModel = new List<JobViewModel>();
+                Decimal totalPlannedHours, totalActualHours, completedProcessHours;
 
                 foreach(Job j in jobs)
                 {
@@ -34,16 +37,40 @@ namespace VIPER.Models.Repository
                     job.JobNumber = j.JobNumber;
                     job.Quantity = j.Quantity;
                     job.OpenDate = j.OpenDate;
-                    if (j.InvoicedTotal.HasValue && j.TotalJobCost.HasValue)
-                        job.ActualProfit = j.InvoicedTotal.GetValueOrDefault() - j.TotalJobCost.GetValueOrDefault();
+                    totalPlannedHours = j.JobProcesses.Sum(jp => jp.PlannedTime);
+                    totalActualHours = j.JobProcesses.Sum(jp => jp.ActualTime);
+                    completedProcessHours = j.JobProcesses.Where(jp => jp.Status == (int)JobStatus.Completed).Sum(jp => jp.PlannedTime);
+                    if (totalPlannedHours == 0)
+                        job.PercentComplete = 0;
                     else
+                        job.PercentComplete = Convert.ToInt32(Math.Round((completedProcessHours / totalPlannedHours) * 100));
+
+                    if (j.Status.HasValue)
+                        job.Status = j.Status.Value;
+                    else
+                        job.Status = (int)JobStatus.NoStatus;
+
+                    if (j.InvoicedTotal.HasValue && j.TotalJobCost.HasValue && j.TotalJobCost != 0)
+                    {
+                        job.ActualProfit = j.InvoicedTotal.Value - j.TotalJobCost.Value;
+                        job.Margin = (job.ActualProfit / j.TotalJobCost.Value) * 100;
+                    }
+                    else
+                    {
                         job.ActualProfit = 0;
-                    
-                   
+                        job.Margin = 0;
+                    }
+
+                    if (totalActualHours == 0)
+                        job.Efficiency = 0;
+                    else
+                        job.Efficiency = (totalPlannedHours / totalActualHours) * 100;
+
                     job.RepairTypeID = j.RepairTypeID.GetValueOrDefault();
+
                     if (j.RepairType != null)
                     {
-                        job.RepairType = new RepairTypeViewModel
+                        job.RepairType = new RepairType
                         {
                             RepairTypeID = j.RepairType.RepairTypeID,
                             Name = j.RepairType.Name
@@ -52,7 +79,7 @@ namespace VIPER.Models.Repository
                     }
                     else
                     {
-                        job.RepairType = new RepairTypeViewModel
+                        job.RepairType = new RepairType
                         {
                             RepairTypeID = 0,
                             Name = ""
@@ -60,9 +87,10 @@ namespace VIPER.Models.Repository
                     }
                     
                     job.SizeID = j.SizeID.GetValueOrDefault();
+
                     if (j.Size != null)
                     {
-                        job.Size = new SizeViewModel
+                        job.Size = new Size
                         {
                             SizeID = j.Size.SizeID,
                             Name = j.Size.Name
@@ -70,31 +98,13 @@ namespace VIPER.Models.Repository
                     }
                     else
                     {
-                        job.Size = new SizeViewModel
+                        job.Size = new Size
                         {
                             SizeID = 0,
                             Name = ""
                         };
                     }
-                    
-                    job.HourID = j.HourID.GetValueOrDefault();
-                    if (j.Hour != null)
-                    {
-                        job.Hour = new HourViewModel
-                        {
-                            HourID = j.Hour.HourID,
-                            Name = j.Hour.Name
-                        };
-                    }
-                    else
-                    {
-                        job.Hour = new HourViewModel
-                        {
-                            HourID = 0,
-                            Name = ""
-                        };
-                    }
-                    
+                     
                     jobsViewModel.Add(job);
                 }
 
@@ -108,20 +118,18 @@ namespace VIPER.Models.Repository
             entity.VesselName = j.VesselName;
             entity.JobNumber = j.JobNumber;
             entity.OpenDate = j.OpenDate.Date;
-            
             entity.Quantity = j.Quantity;
-            
+            entity.Status = (int)JobStatus.NoStatus;
             entity.RepairTypeID = j.RepairType.RepairTypeID;
+            
             if (j.RepairType.RepairTypeID == 0)
                 entity.RepairTypeID = null;
+
             entity.SizeID = j.Size.SizeID;
+
             if (j.Size.SizeID == 0)
                 entity.SizeID = null;
-            entity.HourID = j.Hour.HourID;
-            if (j.Hour.HourID == 0)
-                entity.HourID = null;
-            entity.ActualProfit = 0;
-            
+
             context.Jobs.Add(entity);
             
             List<Process> processes = context.Processes.OrderBy(p => p.ProcessID).ToList();
@@ -138,7 +146,7 @@ namespace VIPER.Models.Repository
                 if (processTimes.Count == 0)
                     jp.PlannedTime = 0;
                 else
-                jp.PlannedTime = processTimes[i].PlannedTime * entity.Quantity;
+                    jp.PlannedTime = processTimes[i].PlannedTime * entity.Quantity;
                 context.JobProcesses.Add(jp);
             }
             context.SaveChanges();
@@ -147,7 +155,7 @@ namespace VIPER.Models.Repository
 
         public void Update(JobViewModel j)
         {
-            Job entity = context.Jobs.FirstOrDefault(job => job.JobID == j.JobID);
+            Job entity = context.Jobs.Find(j.JobID);
             if (entity != null)
             {
                 entity.VesselName = j.VesselName;
@@ -156,7 +164,6 @@ namespace VIPER.Models.Repository
                 entity.Quantity = j.Quantity;
                 entity.RepairTypeID = j.RepairType.RepairTypeID;
                 entity.SizeID = j.Size.SizeID;
-                entity.HourID = j.Hour.HourID;
                 entity.ActualProfit = j.InvoicedTotal - j.TotalJobCost;
                 
                 context.SaveChanges();
@@ -242,11 +249,12 @@ namespace VIPER.Models.Repository
             if (job.PlannedPackaging == 0 || job.PlannedPackaging == null)
                 pj.Planned = (106 * job.Quantity);
             else
-                pj.Planned = job.PlannedPackaging.GetValueOrDefault();
+                pj.Planned = job.PlannedPackaging.Value;
+
             if (job.PackagingCost == 0 || job.PackagingCost == null)
                 pj.Actual = (106 * job.Quantity);
             else
-                pj.Actual = job.PackagingCost.GetValueOrDefault();
+                pj.Actual = job.PackagingCost.Value;
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -254,8 +262,8 @@ namespace VIPER.Models.Repository
             pj.PivotJobID = 7;
             pj.JobID = jobID;
             pj.CostType = "Consumable";
-            pj.Planned = ((pivotJobs[5].Planned + pivotJobs[4].Planned + job.PlannedDutiesCost + job.PlannedShippingCost + job.PlannedThirdPartyCost + job.PlannedSparePartsCost)) * ((Decimal)(0.0075));
-            pj.Actual = ((pivotJobs[5].Actual + pivotJobs[4].Actual + job.DutiesCost + job.ShippingCost + job.ThirdPartyCost + job.SparePartsCost)) * ((Decimal)(0.0075));
+            pj.Planned = ((pivotJobs[4].Planned + job.PlannedDutiesCost + job.PlannedShippingCost + job.PlannedThirdPartyCost + job.PlannedSparePartsCost)) * ((Decimal)(0.0075));
+            pj.Actual = ((pivotJobs[4].Actual + job.DutiesCost + job.ShippingCost + job.ThirdPartyCost + job.SparePartsCost)) * ((Decimal)(0.0075));
             pj.Difference = pj.Planned - pj.Actual;
             pivotJobs.Add(pj);
 
@@ -283,8 +291,7 @@ namespace VIPER.Models.Repository
         public void UpdateJobCost(IList<JobCostViewModel> jobCost)
         {
             int jobID = jobCost[0].JobID;
-            var job = context.Jobs.Include(j => j.JobProcesses).First(j => j.JobID == jobID );
-
+            var job = context.Jobs.Include(j => j.JobProcesses).FirstOrDefault(j => j.JobID == jobID );
 
             if (job != null)
             {
@@ -297,15 +304,17 @@ namespace VIPER.Models.Repository
                         jc.Difference = jc.Planned - jc.Actual;
 
                         var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
-                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+                        //var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
 
-                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
-                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
-
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost  + labor);
+                        //var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+                       
                         var consumable = subTotal * (Decimal)0.0075;
-                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+                        //var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+                        if (job.PackagingCost == 0 || job.PackagingCost == null)
+                            job.PackagingCost = job.Quantity * 106;
 
-                        job.TotalJobCost = subTotal + consumable;
+                        job.TotalJobCost = subTotal + consumable + job.PackagingCost;
                     }
                     else if (jc.PivotJobID == 2)
                     {
@@ -314,15 +323,18 @@ namespace VIPER.Models.Repository
                         jc.Difference = jc.Planned - jc.Actual;
 
                         var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
-                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+                        //var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
 
-                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
-                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + labor);
+                        //var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
 
                         var consumable = subTotal * (Decimal)0.0075;
-                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+                        //var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
 
-                        job.TotalJobCost = subTotal + consumable;
+                        if (job.PackagingCost == 0 || job.PackagingCost == null)
+                            job.PackagingCost = job.Quantity * 106;
+
+                        job.TotalJobCost = subTotal + consumable + job.PackagingCost;
                     }
                     else if (jc.PivotJobID == 3)
                     {
@@ -331,15 +343,18 @@ namespace VIPER.Models.Repository
                         jc.Difference = jc.Planned - jc.Actual;
 
                         var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
-                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+                        //var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
 
-                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
-                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
-
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost  + labor);
+                        //var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+                        
                         var consumable = subTotal * (Decimal)0.0075;
-                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+                        //var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
 
-                        job.TotalJobCost = subTotal + consumable;
+                        if (job.PackagingCost == 0 || job.PackagingCost == null)
+                            job.PackagingCost = job.Quantity * 106;
+
+                        job.TotalJobCost = subTotal + consumable + job.PackagingCost;
                     }
                     else if (jc.PivotJobID == 4)
                     {
@@ -348,21 +363,35 @@ namespace VIPER.Models.Repository
                         jc.Difference = jc.Planned - jc.Actual;
 
                         var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
-                        var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+                        //var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
 
-                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + job.PackagingCost + labor);
-                        var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + labor);
+                        //var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
 
                         var consumable = subTotal * (Decimal)0.0075;
-                        var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+                        //var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
 
-                        job.TotalJobCost = subTotal + consumable;
+                        if (job.PackagingCost == 0 || job.PackagingCost == null)
+                            job.PackagingCost = job.Quantity * 106;
+
+                        job.TotalJobCost = subTotal + consumable + job.PackagingCost;
                     }
                     else if (jc.PivotJobID == 6)
                     {
                         job.PlannedPackaging = jc.Planned;
                         job.PackagingCost = jc.Actual;
                         jc.Difference = jc.Planned - jc.Actual;
+
+                        var labor = job.JobProcesses.Sum(jp => jp.ActualTime) * 93;
+                        //var plannedLabor = job.JobProcesses.Sum(jp => jp.PlannedTime) * 93;
+
+                        var subTotal = (job.SparePartsCost + job.ThirdPartyCost + job.ShippingCost + job.DutiesCost + labor);
+                        //var plannedSubTotal = (job.PlannedSparePartsCost + job.PlannedThirdPartyCost + job.PlannedShippingCost + job.PlannedDutiesCost + job.PlannedPackaging + plannedLabor);
+
+                        var consumable = subTotal * (Decimal)0.0075;
+                        //var plannedConsumable = plannedSubTotal * (Decimal)0.0075;
+
+                        job.TotalJobCost = subTotal + consumable + jc.Actual;
                     }
                     else if (jc.PivotJobID == 9)
                     {
@@ -384,24 +413,19 @@ namespace VIPER.Models.Repository
             jobSchedule.JobID = job.JobID;
             if (job.ReceivedDate.HasValue)
                 jobSchedule.ReceivedDate = job.ReceivedDate.GetValueOrDefault();
-            else
-                jobSchedule.ReceivedDate = null;
+           
             if (job.StartDate.HasValue)
                 jobSchedule.StartDate = job.StartDate.GetValueOrDefault();
-            else
-                jobSchedule.StartDate = null;
+           
             if (job.PromiseDate.HasValue)
                 jobSchedule.PromiseDate = job.PromiseDate.GetValueOrDefault();
-            else
-                jobSchedule.PromiseDate = null;
+            
             if (job.ShipDate.HasValue)
                 jobSchedule.ShipDate = job.ShipDate.GetValueOrDefault();
-            else
-                jobSchedule.ShipDate = null;
+           
             if (job.CompletionDate.HasValue)
                 jobSchedule.CompletionDate = job.CompletionDate.GetValueOrDefault();
-            else
-                jobSchedule.CompletionDate = null;
+           
             if (job.ShipDate.HasValue && job.ReceivedDate.HasValue)
                 jobSchedule.TurnTime = (job.ShipDate.GetValueOrDefault() - job.ReceivedDate.GetValueOrDefault()).Days;
             else
@@ -410,53 +434,37 @@ namespace VIPER.Models.Repository
             List<JobScheduleViewModel> result = new List<JobScheduleViewModel>();
             result.Add(jobSchedule);
 
-            return result;
-            
+            return result; 
         }
 
         public void UpdateJobSchedule(JobScheduleViewModel j)
         {
-            List<Job> jobs = context.Jobs.Where(job => job.JobID == j.JobID).Include(job => job.JobProcesses).Include("JobProcesses.Process").ToList();
-            Job entity = jobs[0];
+            var job = context.Jobs.Include(x => x.JobProcesses).Include("JobProcesses.Process").FirstOrDefault(x => x.JobID == j.JobID);
 
-            if (entity != null)
+            if (job != null)
             {
                 if(j.ReceivedDate.HasValue)
-                    entity.ReceivedDate = j.ReceivedDate.GetValueOrDefault();
+                    job.ReceivedDate = j.ReceivedDate.Value;
 
-
-                if (j.StartDate.HasValue && !entity.StartDate.HasValue)
+                if (j.StartDate.HasValue && !job.StartDate.HasValue)
                 {
-                    entity.StartDate = j.StartDate.GetValueOrDefault();
-                    entity.JobSchedule = true;
-                    DateTime nextStart = DateTime.Now;
-
-                    foreach (JobProcess jp in entity.JobProcesses)
-                    {
-                        if (jp.Process.Step == 1)
-                            jp.Start = j.StartDate.GetValueOrDefault();
-                        else
-                            jp.Start = nextStart;
-
-                        jp.End = nextStart = GetNextProcessStartTime(jp.Start, (Double)jp.PlannedTime);
-                        if (jp.Process.Step == 7)
-                            entity.PromiseDate = j.PromiseDate = jp.End;
-                    }
+                    job.StartDate = j.StartDate.Value;
+                    job.PromiseDate = job.StartDate.Value.AddDays(45.00);
                 }
                 else if (j.StartDate.HasValue)
-                    entity.StartDate = j.StartDate.GetValueOrDefault();
+                    job.StartDate = j.StartDate.Value;
 
                 if(j.ShipDate.HasValue)
-                    entity.ShipDate = j.ShipDate.GetValueOrDefault();
+                    job.ShipDate = j.ShipDate.Value;
 
                 if (j.CompletionDate.HasValue)
-                    entity.CompletionDate = j.CompletionDate.GetValueOrDefault();
+                    job.CompletionDate = j.CompletionDate.Value;
 
-                if(j.PromiseDate.HasValue)
-                    entity.PromiseDate = j.PromiseDate.GetValueOrDefault();
-
+                if (j.PromiseDate.HasValue)
+                    job.PromiseDate = j.PromiseDate.Value;
+                     
                 if(j.ShipDate.HasValue && j.ReceivedDate.HasValue)
-                    j.TurnTime = (j.ShipDate.GetValueOrDefault() - j.ReceivedDate.GetValueOrDefault()).Days;
+                    j.TurnTime = (j.ShipDate.Value - j.ReceivedDate.Value).Days;
                
                 context.SaveChanges();
             }
@@ -464,26 +472,34 @@ namespace VIPER.Models.Repository
 
         public List<JobProcessViewModel> GetJobProcesses(int jobID)
         {
-            return context.JobProcesses.Where(jp => jp.JobID == jobID).Include(jp => jp.Process).Select(jp => new JobProcessViewModel
-                {
-                    JobProcessID = jp.JobProcessID,
-                    JobID = jp.JobID,
-                    ProcessID = jp.ProcessID,
-                    ProcessName = jp.Process.Name,
-                    PlannedTime = jp.PlannedTime,
-                    ActualTime = jp.ActualTime,
-                    Difference = jp.PlannedTime - jp.ActualTime,
-                    Note = jp.Note,
-                    ReworkTime = jp.ReworkTime.GetValueOrDefault(),
-                    ImageURL = (jp.PlannedTime - jp.ActualTime) > 0 ? "check-icon-red.png" : "check-icon-green.png",
-                    ScheduleWeek = jp.ScheduleWeek,
-                    Status = jp.Status
-                }).ToList();
+            var entities = context.JobProcesses.Where(jp => jp.JobID == jobID).Include(jp => jp.Process).ToList();
+
+            List<JobProcessViewModel> jobProcesses = new List<JobProcessViewModel>();
+            JobProcessViewModel jobProcess;
+
+            foreach(var jp in entities)
+            {
+                jobProcess = new JobProcessViewModel();
+                jobProcess.JobProcessID = jp.JobProcessID;
+                jobProcess.JobID = jp.JobID;
+                jobProcess.Status = jp.Status;
+                jobProcess.ProcessID = jp.ProcessID;
+                jobProcess.ProcessName = jp.Process.Name;
+                jobProcess.PlannedTime = jp.PlannedTime;
+                jobProcess.ActualTime = jp.ActualTime;
+                jobProcess.Note = jp.Note;
+                jobProcess.Difference = jp.PlannedTime - jp.ActualTime;
+                jobProcess.ReworkTime = jp.ReworkTime;
+                jobProcess.ScheduleWeek = jp.ScheduleWeek;
+
+                jobProcesses.Add(jobProcess);
+            }
+            return jobProcesses;
         }
 
         public void UpdateJobProcesses(JobProcessViewModel jobProcess)
         {
-            var entity = context.JobProcesses.FirstOrDefault(jp => jp.JobProcessID == jobProcess.JobProcessID);
+            var entity = context.JobProcesses.Find(jobProcess.JobProcessID);
             if (entity != null)
             {
                 entity.PlannedTime = jobProcess.PlannedTime;
@@ -496,86 +512,123 @@ namespace VIPER.Models.Repository
             }
         }
 
-        public DateTime GetNextProcessStartTime(DateTime nextStart, Double totalProcessTime)
-        {
-            IList<Holiday> holidays = context.Holidays.Where(h => h.Date.Year == DateTime.Now.Year).ToList();
+        //public DateTime GetNextProcessStartTime(DateTime nextStart, Double totalProcessTime)
+        //{
+        //    IList<Holiday> holidays = context.Holidays.Where(h => h.Date.Year == DateTime.Now.Year).ToList();
 
-            Double totalProcessDays = Math.Floor((totalProcessTime / 7.5));
+        //    Double totalProcessDays = Math.Floor((totalProcessTime / 7.5));
 
-            Double remainingHours = (totalProcessTime % 7.5);
+        //    Double remainingHours = (totalProcessTime % 7.5);
 
-            for (int i = 0; i < totalProcessDays; i++)
-            {
-                nextStart = nextStart.AddDays(1);
-                if (nextStart.DayOfWeek == DayOfWeek.Saturday)
-                    nextStart = nextStart.AddDays(2);
-                foreach (Holiday h in holidays)
-                {
-                    if (nextStart.Date == h.Date.Date)
-                        nextStart = nextStart.AddDays(1);
-                }
-            }
+        //    for (int i = 0; i < totalProcessDays; i++)
+        //    {
+        //        nextStart = nextStart.AddDays(1);
+        //        if (nextStart.DayOfWeek == DayOfWeek.Saturday)
+        //            nextStart = nextStart.AddDays(2);
+        //        foreach (Holiday h in holidays)
+        //        {
+        //            if (nextStart.Date == h.Date.Date)
+        //                nextStart = nextStart.AddDays(1);
+        //        }
+        //    }
 
-            DateTime previousStart = nextStart;
+        //    DateTime previousStart = nextStart;
 
-            nextStart = nextStart.AddHours(remainingHours);
+        //    nextStart = nextStart.AddHours(remainingHours);
 
-            if (nextStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) < 0)
-            {
-                nextStart = nextStart.AddMinutes(15);
-            }
+        //    if (nextStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) < 0)
+        //    {
+        //        nextStart = nextStart.AddMinutes(15);
+        //    }
 
-            if (nextStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) < 0)
-            {
-                nextStart = nextStart.AddMinutes(30);
-            }
+        //    if (nextStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) < 0)
+        //    {
+        //        nextStart = nextStart.AddMinutes(30);
+        //    }
 
-            if (nextStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) < 0)
-            {
-                nextStart = nextStart.AddMinutes(15);
-            }
+        //    if (nextStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) < 0)
+        //    {
+        //        nextStart = nextStart.AddMinutes(15);
+        //    }
 
-            if (nextStart.TimeOfDay.CompareTo(new TimeSpan(15, 30, 0)) > 0)
-            {
-                var remainingProcessTime = nextStart.TimeOfDay.Subtract(new TimeSpan(15, 30, 0));
-                nextStart = nextStart.Date.AddHours(31);
+        //    if (nextStart.TimeOfDay.CompareTo(new TimeSpan(15, 30, 0)) > 0)
+        //    {
+        //        var remainingProcessTime = nextStart.TimeOfDay.Subtract(new TimeSpan(15, 30, 0));
+        //        nextStart = nextStart.Date.AddHours(31);
 
-                previousStart = nextStart;
+        //        previousStart = nextStart;
 
-                nextStart = nextStart.AddHours(remainingProcessTime.TotalHours);
+        //        nextStart = nextStart.AddHours(remainingProcessTime.TotalHours);
 
-                if (nextStart.DayOfWeek == DayOfWeek.Saturday)
-                    nextStart = nextStart.AddDays(2);
+        //        if (nextStart.DayOfWeek == DayOfWeek.Saturday)
+        //            nextStart = nextStart.AddDays(2);
 
-                foreach (Holiday h in holidays)
-                {
-                    if (nextStart.Date == h.Date.Date)
-                        nextStart = nextStart.AddDays(1);
-                }
+        //        foreach (Holiday h in holidays)
+        //        {
+        //            if (nextStart.Date == h.Date.Date)
+        //                nextStart = nextStart.AddDays(1);
+        //        }
 
-                if (nextStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) < 0)
-                {
-                    nextStart = nextStart.AddMinutes(15);
-                }
+        //        if (nextStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(9, 0, 0)) < 0)
+        //        {
+        //            nextStart = nextStart.AddMinutes(15);
+        //        }
 
-                if (nextStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) < 0)
-                {
-                    nextStart = nextStart.AddMinutes(30);
-                }
+        //        if (nextStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(12, 0, 0)) < 0)
+        //        {
+        //            nextStart = nextStart.AddMinutes(30);
+        //        }
 
-                if (nextStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) < 0)
-                {
-                    nextStart = nextStart.AddMinutes(15);
-                }
-            }
+        //        if (nextStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) >= 0 && previousStart.TimeOfDay.CompareTo(new TimeSpan(14, 0, 0)) < 0)
+        //        {
+        //            nextStart = nextStart.AddMinutes(15);
+        //        }
+        //    }
 
-            return nextStart;
-        }
+        //    return nextStart;
+        //}
 
         public void Dispose()
         {
-            context.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this); 
         }
-       
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                context.Dispose();
+                // Free any other managed objects here. 
+            }
+
+            // Free any unmanaged objects here. 
+            disposed = true;
+        }
+
+        public void UpdateJobStatus(int status, int jobID)
+        {
+            var job = context.Jobs.Find(jobID);
+
+            if(job != null)
+            {
+                job.Status = status;
+                context.SaveChanges();
+            }
+        }
+
+        public void UpdateJobProcessStatus(int status, int jobProcessID)
+        {
+            var jobProcess = context.JobProcesses.Find(jobProcessID);
+
+            if (jobProcess != null)
+            {
+                jobProcess.Status = status;
+                context.SaveChanges();
+            }
+        }
     }
 }

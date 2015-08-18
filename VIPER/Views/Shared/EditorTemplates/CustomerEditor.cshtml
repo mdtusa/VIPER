@@ -1,11 +1,11 @@
-﻿@model VIPER.Models.ViewModel.CustomerViewModel
+﻿@model VIPER.Models.Entities.Customer
 
 @(Html.Kendo().DropDownList().Name("Customer")
     .OptionLabel("Select...")
     .DataTextField("Name")
     .DataValueField("CustomerID")
+    .Events(e => e.Change("customerChange").Open("customerOpen"))
     .DataSource(d => d
-        .Read(r => r.Action("JSONCustomer", "Admin"))
+    .Read(r => r.Action("JSONCustomer", "Customer").Type(HttpVerbs.Post))
     )
 )
-

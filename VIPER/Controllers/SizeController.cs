@@ -24,10 +24,12 @@ namespace VIPER.Controllers
             var sizes = sizeRepo.Sizes;
 
             if (RepairTypeID != null)
-            {
                 sizes = sizes.Where(s => s.RepairTypeID == RepairTypeID.GetValueOrDefault()).ToList();
-            }
-            return Json(sizes.Select(s => new { SizeID = s.SizeID, Name = s.Name }), JsonRequestBehavior.AllowGet);
+
+            //return Json(sizes.Select(s => new { SizeID = s.SizeID, Name = s.Name }), JsonRequestBehavior.AllowGet);
+            var json = Json(sizes, JsonRequestBehavior.AllowGet);
+
+            return json;
         }
 
         public ActionResult Size_Read([DataSourceRequest] DataSourceRequest request)
@@ -36,7 +38,7 @@ namespace VIPER.Controllers
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult Size_Create([DataSourceRequest] DataSourceRequest request, SizeViewModel s)
+        public ActionResult Size_Create([DataSourceRequest] DataSourceRequest request, Size s)
         {
             if (s != null && ModelState.IsValid)
             {
@@ -47,7 +49,7 @@ namespace VIPER.Controllers
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult Size_Update([DataSourceRequest] DataSourceRequest request, SizeViewModel s)
+        public ActionResult Size_Update([DataSourceRequest] DataSourceRequest request, Size s)
         {
             if (s != null && ModelState.IsValid)
             {
@@ -58,7 +60,7 @@ namespace VIPER.Controllers
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult Size_Destroy([DataSourceRequest] DataSourceRequest request, SizeViewModel s)
+        public ActionResult Size_Destroy([DataSourceRequest] DataSourceRequest request, Size s)
         {
             if (s != null)
             {

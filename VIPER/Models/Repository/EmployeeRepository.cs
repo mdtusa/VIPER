@@ -56,8 +56,8 @@ namespace VIPER.Models.Repository
 
         internal IQueryable<EmployeeProcessViewModel> GetAssignment()
         {
-            ChangeJobScheduleStatus();
-            return context.EmployeeProcesses.Include(ep => ep.JobProcess).Include("JobProcess.Job").Where(ep => ep.JobProcess.Job.JobSchedule == true).Select( ep => new EmployeeProcessViewModel
+            //ChangeJobScheduleStatus();
+            return context.EmployeeProcesses.Include(ep => ep.JobProcess).Include("JobProcess.Job").Where(ep => ep.JobProcess.Job.Status == (int)JobStatus.InProcess).Select( ep => new EmployeeProcessViewModel
             {
                 EmployeeProcessID = ep.EmployeeProcessID,
                 EmployeeID = ep.EmployeeID,
@@ -106,8 +106,8 @@ namespace VIPER.Models.Repository
 
         private Boolean IsEmployeeAvailable(EmployeeProcessViewModel assignment, ModelStateDictionary modelState)
         {
-            ChangeJobScheduleStatus();
-            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Where(ep => ep.EmployeeID == assignment.EmployeeID).Where(ep => ep.JobProcess.Job.JobSchedule == true);
+            //ChangeJobScheduleStatus();
+            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Where(ep => ep.EmployeeID == assignment.EmployeeID).Where(ep => ep.JobProcess.Job.Status == (int)JobStatus.InProcess).ToList();
 
             var newJobProcess = context.JobProcesses.Find(assignment.JobProcessID);
 
@@ -115,7 +115,7 @@ namespace VIPER.Models.Repository
             {
                 if (((newJobProcess.Start > empProc.JobProcess.Start) && (newJobProcess.Start < empProc.JobProcess.End)) || ((newJobProcess.End > empProc.JobProcess.Start) && (newJobProcess.End < empProc.JobProcess.End)))
                 {
-                    modelState.AddModelError("errors", "Amin");
+                    modelState.AddModelError("errors", "Employee already assigned for this time period.");
                     return false;
                 }
             }
@@ -125,9 +125,9 @@ namespace VIPER.Models.Repository
 
         internal IQueryable<CalendarViewModel> GetEmployeeCalendar()
         {
-            ChangeJobScheduleStatus();
-            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Include("JobProcess.Process").Where(ep => ep.JobProcess.Job.JobSchedule == true);//.Where(ep => ep.Employee.Type == "Person");
-            var allEmployees = employeeProcesses.Where(ep => ep.Employee.Type == "Person");
+            //ChangeJobScheduleStatus();
+            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Include("JobProcess.Process").Where(ep => ep.JobProcess.Job.Status == (int)JobStatus.InProcess);//.Where(ep => ep.Employee.Type == "Person");
+            var allEmployees = employeeProcesses.Where(ep => ep.Employee.Type == "Person").ToList();
             var allAreas = employeeProcesses.Where(ep => ep.Employee.Type == "Area").ToList();
             
 
@@ -161,8 +161,8 @@ namespace VIPER.Models.Repository
        
         internal IQueryable<CalendarViewModel> GetAreaCalendar()
         {
-            ChangeJobScheduleStatus();
-            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Include("JobProcess.Process").Where(ep => ep.JobProcess.Job.JobSchedule == true);
+            //ChangeJobScheduleStatus();
+            var employeeProcesses = context.EmployeeProcesses.Include(ep => ep.Employee).Include(ep => ep.JobProcess).Include("JobProcess.Job").Include("JobProcess.Process").Where(ep => ep.JobProcess.Job.Status == (int)JobStatus.InProcess);
             var allEmployees = employeeProcesses.Where(ep => ep.Employee.Type == "Person").ToList();
             var allAreas = employeeProcesses.Where(ep => ep.Employee.Type == "Area");
 
@@ -193,17 +193,17 @@ namespace VIPER.Models.Repository
             return calendarViewModel.AsQueryable();
         }
 
-        private void ChangeJobScheduleStatus()
-        {
-            var jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true);
-            foreach (var job in jobs)
-            {
-                if (job.PromiseDate < DateTime.Today)
-                {
-                    job.JobSchedule = false;
-                }
-            }
-            context.SaveChanges();
-        }
+        //private void ChangeJobScheduleStatus()
+        //{
+        //    var jobs = context.Jobs.Include(j => j.JobProcesses).Include("JobProcesses.Process").Where(j => j.JobSchedule == true);
+        //    foreach (var job in jobs)
+        //    {
+        //        if (job.PromiseDate == null || job.PromiseDate < DateTime.Today)
+        //        {
+        //            job.JobSchedule = false;
+        //        }
+        //    }
+        //    context.SaveChanges();
+        //}
     }
 }

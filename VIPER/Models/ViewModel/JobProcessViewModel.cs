@@ -35,6 +35,6 @@ namespace VIPER.Models.ViewModel
 
         public string Note { get; set; }
 
-        public decimal ReworkTime { get; set; }
+        public decimal? ReworkTime { get; set; }
     }
 }

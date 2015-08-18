@@ -132,7 +132,6 @@ C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\bin\sv-SE\Kendo.Mvc.resources.dll
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\bin\tr-TR\Kendo.Mvc.resources.dll
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\bin\uk-UA\Kendo.Mvc.resources.dll
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\bin\zh-CN\Kendo.Mvc.resources.dll
-C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.csprojResolveAssemblyReference.cache
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.PrimaryKey.resources
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.IdentityKey.resources
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.CompositeUnique.resources
@@ -164,3 +163,30 @@ C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddSche
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.csproj.GenerateResource.Cache
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.dll
 C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.pdb
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.PackagingInJob.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.Packaging1InJob.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.csprojResolveAssemblyReference.cache
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.SetReworktoNull.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.KPITable.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.KPIYearToString.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddStatusToJob.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddRevenueToKPI.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.Add3Tables.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.DeleteColumnsFromJob.resources
+C:\Users\aprasla\Documents\GitHub\VIPER\VIPER\obj\Debug\VIPER.Migrations.ChangeCustomerAndSize.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.PackagingInJob.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.Packaging1InJob.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.SetReworktoNull.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.KPITable.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.KPIYearToString.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddStatusToJob.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddRevenueToKPI.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.Add3Tables.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.DeleteColumnsFromJob.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddDateToAllJob.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddSubUnitAndMotor.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddMarket.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.TechServiceKPITable.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.TechTypeTable.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.AddEngineerUtilization.resources
+C:\Users\aprasla\Documents\Visual Studio 2013\Projects\VIPER\VIPER\obj\Debug\VIPER.Migrations.MakeNullInEngineerUtilization.resources

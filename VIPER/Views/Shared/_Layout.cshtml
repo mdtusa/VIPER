@@ -3,34 +3,36 @@
     <head>
         <title>@ViewBag.Title - VIPER</title>
         <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />
-    	<link href="@Url.Content("~/Content/kendo/2014.3.1316/kendo.common.min.css")" rel="stylesheet" type="text/css" />
-	<link href="@Url.Content("~/Content/kendo/2014.3.1316/kendo.mobile.all.min.css")" rel="stylesheet" type="text/css" />
-	<link href="@Url.Content("~/Content/kendo/2014.3.1316/kendo.dataviz.min.css")" rel="stylesheet" type="text/css" />
-	<link href="@Url.Content("~/Content/kendo/2014.3.1316/kendo.default.min.css")" rel="stylesheet" type="text/css" />
-	<link href="@Url.Content("~/Content/kendo/2014.3.1316/kendo.dataviz.default.min.css")" rel="stylesheet" type="text/css" />
-	<script src="@Url.Content("~/Scripts/kendo/2014.3.1316/jquery.min.js")"></script>
-	<script src="@Url.Content("~/Scripts/kendo/2014.3.1316/jszip.min.js")"></script>
-	<script src="@Url.Content("~/Scripts/kendo/2014.3.1316/kendo.all.min.js")"></script>
-	<script src="@Url.Content("~/Scripts/kendo/2014.3.1316/kendo.aspnetmvc.min.js")"></script>
+    	<link href="@Url.Content("~/Content/kendo/2015.2.727/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+	<link href="@Url.Content("~/Content/kendo/2015.2.727/kendo.mobile.all.min.css")" rel="stylesheet" type="text/css" />
+	<link href="@Url.Content("~/Content/kendo/2015.2.727/kendo.dataviz.min.css")" rel="stylesheet" type="text/css" />
+	<link href="@Url.Content("~/Content/kendo/2015.2.727/kendo.custom.css")" rel="stylesheet" type="text/css" />
+	<link href="@Url.Content("~/Content/kendo/2015.2.727/kendo.dataviz.silver.min.css")" rel="stylesheet" type="text/css" />
+	<script src="@Url.Content("~/Scripts/kendo/2015.2.727/jquery.min.js")"></script>
+	<script src="@Url.Content("~/Scripts/kendo/2015.2.727/jszip.min.js")"></script>
+	<script src="@Url.Content("~/Scripts/kendo/2015.2.727/kendo.all.min.js")"></script>
+	<script src="@Url.Content("~/Scripts/kendo/2015.2.727/kendo.aspnetmvc.min.js")"></script>
 	<script src="@Url.Content("~/Scripts/kendo.modernizr.custom.js")"></script>
 </head>
 <body>
-    <header>
-        <div class="content-wrapper">
-            <div class="float-left">
-                <p class="site-title">@Html.ActionLink("Logo", "Index", "Home", null, new { @class = "main-logo" })</p>
+    
+        <div id="header">
+            <div class="wrapper">
+                <div class="logo"><a href="/"><img alt="MAN Diesel" src="@Url.Content("~/Content/shared/logo.png")"></a></div>
+                <div class="logo_mps"><img alt="MAN | PrimeServ Project Management" src="@Url.Content("~/Content/shared/Viper.png")"></div>
             </div>
-            <div class="float-right">
-
-                @(Html.Kendo().Menu()
+        </div>
+        <div id="main-nav">
+           
+            @(Html.Kendo().Menu()
                     .Name("MenuViper")
                     .Items(items =>
                     {
-                        items.Add().Text("Home").Action("Index", "Home");
+                        items.Add().Text("Home").Action("Workshop", "KPI", new { id = DateTime.Now.Year });
                         items.Add().Text("Employee").Action("Employee", "Admin");
                         items.Add().Text("Area").Action("Area", "Admin");
                         items.Add()
-                             .Text("Admin")
+                             .Text("Workshop")
                              .Items(children =>
                              {
                                  children.Add().Text("Jobs").Action("Job", "Admin");
@@ -39,49 +41,36 @@
                                  children.Add().Text("Sizes").Action("Size", "Admin");
                                  children.Add().Text("Holidays").Action("Holiday", "Admin");
                                  children.Add().Text("Process Time").Action("ProcessTime", "Admin");
+                                 children.Add().Text("KPI Entry").Action("Index", "KPI");
+                             });
+                        items.Add()
+                             .Text("PrimeServ")
+                             .Items(children =>
+                             {
+                                 children.Add().Text("Jobs").Action("AllJob", "AllJob");
+                                 children.Add().Text("KPIs").Action("TechServices", "KPI", new { id = DateTime.Now.Year });
+                                 children.Add().Text("KPI Entry").Action("KPIEntry", "KPI");
+                                 //children.Add().Text("Customers").Action("Customer", "Customer");
+                                 //children.Add().Text("Technician").Action("Technician", "Technician");
+                                 children.Add().Text("Market").Action("Market", "Market");
+                                 children.Add().Text("Market Category").Action("MarketCategory", "Market");
+                                 //children.Add().Text("Motor").Action("Motor", "Motor");
                              });
                     })
-                )
+            )
 
-            </div>
-
-            @*<div class="float-right">
-        <nav>
-            <ul id="menu">
-                <li>@Html.ActionLink("Index", "Index", "Home")</li>
-                <li>@Html.ActionLink("Jobs", "Job", "Admin")</li>
-                <li>@Html.ActionLink("Scheduler", "Schedule", "Admin")</li>
-                <li>@Html.ActionLink("Employee", "Employee", "Admin")</li>
-                <li>@Html.ActionLink("Area", "Area", "Admin")</li>
-                <li>@Html.ActionLink("Repair-Types", "RepairType", "Admin")</li>
-                <li>@Html.ActionLink("Sizes", "Size", "Admin")</li>
-                <li>@Html.ActionLink("Holidays", "Holiday", "Admin")</li>
-                <li>@Html.ActionLink("Process Time", "ProcessTime", "Admin")</li>
-
-            </ul>
-        </nav>
-    </div>*@
         </div>
-    </header>
-    @*<div id="body">
-            @RenderSection("featured", required: false)
+        <div id="body">
             <section class="content-wrapper main-content clear-fix">
                 @RenderBody()
             </section>
-        </div>*@
-    <div id="body">
-        <section class="content-wrapper main-content clear-fix">
-            @RenderBody()
-        </section>
-    </div>
-
-    <footer>
-        <div class="content-wrapper">
-            <div class="float-left">
+        </div>
+        <div id="footer">
+            <div class="wrapper">
                 <p>&copy; @DateTime.Now.Year - MAN Diesel & Turbo </p>
             </div>
         </div>
-    </footer>
+    
 </body>
 
 </html>

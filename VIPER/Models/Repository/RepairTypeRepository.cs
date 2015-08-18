@@ -16,18 +16,15 @@ namespace VIPER.Models.Repository
             this.context = new VIPERDbContext();
         }
 
-        public IList<RepairTypeViewModel> RepairTypes
+        public IList<RepairType> RepairTypes
         {
             get
             {
-                return context.RepairTypes.Select(rt => new RepairTypeViewModel() { 
-                    RepairTypeID = rt.RepairTypeID,
-                    Name = rt.Name
-                }).ToList();
+                return context.RepairTypes.ToList();
             }
         }
 
-        public void Create(RepairTypeViewModel rt)
+        public void Create(RepairType rt)
         {
             var entity = new RepairType();
             entity.Name = rt.Name;
@@ -36,20 +33,20 @@ namespace VIPER.Models.Repository
             rt.RepairTypeID = entity.RepairTypeID;
         }
 
-        public void Update(RepairTypeViewModel rt)
+        public void Update(RepairType rt)
         {
 
-            RepairType entity = context.RepairTypes.Single(r => r.RepairTypeID == rt.RepairTypeID);
+            RepairType entity = context.RepairTypes.Find(rt.RepairTypeID);
             if (entity != null)
                 entity.Name = rt.Name;
             context.SaveChanges();
 
         }
 
-        public void Destroy(RepairTypeViewModel rt)
+        public void Destroy(RepairType rt)
         {
 
-            RepairType entity = context.RepairTypes.Single(r => r.RepairTypeID == rt.RepairTypeID);
+            RepairType entity = context.RepairTypes.Find(rt.RepairTypeID);
             if (entity != null)
                 context.RepairTypes.Remove(entity);
             context.SaveChanges();

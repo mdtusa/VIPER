@@ -14,19 +14,26 @@ namespace VIPER.Models
         { 
             this.Configuration.ProxyCreationEnabled = false; 
         } 
+
         public DbSet<Job> Jobs { get; set; }
 
-        public DbSet<Customer> Customers { get; set; }
+        public DbSet<AllJob> AllJobs { get; set; }
 
-        public DbSet<Location> Locations { get; set; }
+        public DbSet<Technician> Technicians { get; set; }
+
+        public DbSet<MarketCategory> MarketCategories { get; set; }
+
+        public DbSet<Market> Markets { get; set; }
+
+        public DbSet<Motor> Motors { get; set; }
+
+        public DbSet<Customer> Customers { get; set; }
 
         public DbSet<Process> Processes { get; set; }
 
         public DbSet<RepairType> RepairTypes { get; set; }
 
         public DbSet<Size> Sizes { get; set; }
-
-        public DbSet<Hour> Hours { get; set; }
 
         public DbSet<Employee> Employees { get; set; }
 
@@ -37,6 +44,16 @@ namespace VIPER.Models
         public DbSet<EmployeeProcess> EmployeeProcesses { get; set; }
 
         public DbSet<Holiday> Holidays { get; set; }
+
+        public DbSet<KPI> KPIs { get; set; }
+
+        public DbSet<TechServicesKPI> TechServicesKPIs { get; set; }
+
+        public DbSet<Month> Months { get; set; }
+
+        public DbSet<TechnicianType> TechnicianTypes { get; set; }
+
+        public DbSet<EngineerUtilization> EngineerUtilizations { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

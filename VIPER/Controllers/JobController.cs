@@ -7,7 +7,6 @@ using Kendo.Mvc.UI;
 using Kendo.Mvc.Extensions;
 using VIPER.Models.Entities;
 using VIPER.Models.ViewModel;
-using AutoMapper;
 using System.Web.Script.Serialization;
 using VIPER.Tools;
 
@@ -110,6 +109,25 @@ namespace VIPER.Controllers
                 }
             }
             return Json(jobSchedules.ToDataSourceResult(request, ModelState));
+        }
+
+        [AcceptVerbs(HttpVerbs.Post)]
+        public void UpdateJobStatus(int status, int jobID)
+        {
+            if(ModelState.IsValid)
+            {
+                jobRepo.UpdateJobStatus(status, jobID);
+            }
+        }
+
+      
+        [AcceptVerbs(HttpVerbs.Post)]
+        public void UpdateJobProcessStatus(int status, int jobProcessID)
+        {
+            if(ModelState.IsValid)
+            {
+                jobRepo.UpdateJobProcessStatus(status, jobProcessID);
+            }
         }
     }
 }

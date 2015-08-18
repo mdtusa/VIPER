@@ -1,21 +1,24 @@
-﻿
-@{
-   ViewBag.Title = "Job";
+﻿@{
+    ViewBag.Title = "Jobs";
 }
 
-<h2>Job</h2>
+<h2>Jobs</h2>
+<br/>
 
 @(Html.Kendo().Grid<VIPER.Models.ViewModel.JobViewModel>().Name("Job").Columns(c =>
 {
+    c.Bound(j => j.Status).Title("").Width(40).ClientTemplate("#= displayJobStatus(Status,JobID)#").Filterable(f => f.UI("statusFilter"));
+    c.Bound(j => j.PercentComplete).ClientTemplate("<div class='progress'></div>").Title("Progress");
     c.Bound(j => j.OpenDate).Width(110).EditorTemplateName("Date").Title("Date").Format("{0:MM/dd/yyyy}");
-    c.Bound(j => j.VesselName).Width(220);
-    c.Bound(j => j.RepairType).ClientTemplate("#=RepairType.Name#").EditorTemplateName("RepairTypeEditor").Title("Repair Type").Width(160);
-    c.Bound(j => j.Size).ClientTemplate("#=Size.Name#").EditorTemplateName("SizeEditor").Title("Size").Width(90);
-    c.Bound(j => j.Hour).ClientTemplate("#=Hour.Name#").EditorTemplateName("HourEditor").Title("Hours").Width(100);
-    c.Bound(j => j.JobNumber).Title("Job No.").Width(120);
-    c.Bound(j => j.Quantity).Title("Qty.").Width(80);
-    c.Bound(j => j.ActualProfit).Title("Profit").Width(120).ClientTemplate("#= ChangeCellColor(ActualProfit)#"); ;
-    c.Command(command => { command.Destroy(); command.Edit(); }).Width(180);
+    c.Bound(j => j.VesselName).Width(180);
+    c.Bound(j => j.RepairType).ClientTemplate("#=RepairType.Name#").EditorTemplateName("RepairTypeEditor").Title("Repair Type").Width(130).Filterable(false);
+    c.Bound(j => j.Size).ClientTemplate("#=Size.Name#").EditorTemplateName("SizeEditor").Title("Size").Width(95).Filterable(false);
+    c.Bound(j => j.JobNumber).Title("Job #").Width(100);
+    c.Bound(j => j.Quantity).Title("Qty").Width(60).Filterable(false);
+    c.Bound(j => j.ActualProfit).Title("Profit").Width(110).ClientTemplate("#= changeActualProfit(ActualProfit)#");
+    c.Bound(j => j.Margin).Width(95).ClientTemplate("#= changeMargin(Margin)#");
+    c.Bound(j => j.Efficiency).Width(85).Title("Effcy").ClientTemplate("#= changeEfficiency(Efficiency)#");
+    c.Command(command => { command.Edit(); command.Destroy(); }).Width(175);
 })
 .DataSource(d => d
     .Ajax()
@@ -24,31 +27,58 @@
     .Update(update => update.Action("Job_Update", "Admin"))
     .Destroy(destroy => destroy.Action("Job_Destroy", "Admin"))
     .Events(events => events.Error("error_handler"))
-    .PageSize(10)
+    .PageSize(13)
     .Model(m =>
     {
         m.Id(j => j.JobID);
-        m.Field(j => j.Hour).DefaultValue(new VIPER.Models.ViewModel.HourViewModel());
-        m.Field(j => j.RepairType).DefaultValue(new VIPER.Models.ViewModel.RepairTypeViewModel());
-        m.Field(j => j.Size).DefaultValue(new VIPER.Models.ViewModel.SizeViewModel());
+        m.Field(j => j.RepairType).DefaultValue(new VIPER.Models.Entities.RepairType());
+        m.Field(j => j.Size).DefaultValue(new VIPER.Models.Entities.Size());
+        m.Field(j => j.Status).Editable(false);
         m.Field(j => j.ActualProfit).Editable(false);
+        m.Field(j => j.Margin).Editable(false);
+        m.Field(j => j.Efficiency).Editable(false);
+        m.Field(j => j.PercentComplete).Editable(false);
     })
 )
 .Scrollable()
 .Sortable()
 .Filterable()
-.Groupable()
 .ClientDetailTemplateId("template")
-.HtmlAttributes(new { style = "height:700px;" })
-.Pageable()
+.HtmlAttributes(new { style = "height:650px;" })
+.Pageable(p => p.Refresh(true))
 .Editable(e => e.Mode(GridEditMode.InLine))
-.ToolBar(t => t.Create())
+.Events(events => { events.DataBound("dataBoundHandler"); events.Cancel("cancelEventHandler"); })
+.ToolBar(toolbar =>
+    {
+        toolbar.Template(@<text>
+            <div id="addButton">
+                <a class='k-button k-button-icontext k-grid-add'
+                   href='#'><span class='k-icon k-add'></span>Add new Job</a>
+            </div>
+            <div class="toolbar">
+
+                <label class="category-label" for="categories">Show Jobs by Repair-Type:</label>
+                @(Html.Kendo().DropDownList()
+                            .Name("categories")
+                            .OptionLabel("All")
+                            .DataTextField("Name")
+                            .DataValueField("RepairTypeID")
+                            .AutoBind(false)
+                            .Events(e => e.Change("repairTypeFilter"))
+                            .DataSource(ds =>
+                            {
+                                ds.Read("JSONRepairType", "Admin");
+                            })
+                )
+            </div>
+        </text>);
+    })
 )
 
 <script id="template" type="text/kendo-tmpl">
     @(Html.Kendo().TabStrip()
             .Name("tabStrip_#=JobID#")
-            
+
             .SelectedIndex(0)
             .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
             .Items(items =>
@@ -67,7 +97,7 @@
                         {
                             toolbar.Save();
                         })
-                        .Events(e => e.Edit("Grid1Edit"))
+                        .Events(e => e.Edit("grid1EditHandler"))
                         .Pageable(p => p.Refresh(true).Numeric(false))
                         .Editable(editable => editable.Mode(GridEditMode.InCell))
                         .DataSource(dataSource => dataSource
@@ -121,18 +151,19 @@
 
                 </text>
                 );
-                items.Add().Text("Process").Content(@<text>
+                items.Add().Text("Processes").Content(@<text>
                     @(Html.Kendo().Grid<VIPER.Models.ViewModel.JobProcessViewModel>()
                         .Name("grid3_#=JobID#")
                         .Columns(columns =>
                         {
+                            columns.Bound(jp => jp.Status).Title("").Width(40).ClientTemplate("\\#= displayProcessStatus(Status, JobProcessID)\\#");
                             columns.Bound(jp => jp.ProcessName).Width(150);
                             columns.Bound(jp => jp.PlannedTime).Title("Planned").Width(100);
                             columns.Bound(jp => jp.ActualTime).Title("Actual").Width(100);
+                            columns.Bound(jp => jp.Difference).Width(100);
                             columns.Bound(jp => jp.ReworkTime).Title("Rework").Width(100);
-                            columns.Bound(jp => jp.Difference).Width(100); 
                             columns.Bound(jp => jp.ScheduleWeek).Width(160);
-                            columns.Bound(jp => jp.Note).Width(300);
+                            columns.Bound(jp => jp.Note).Width(450);
                         })
                         .ToolBar(toolbar =>
                         {
@@ -150,14 +181,15 @@
                                 m.Id(jp => jp.JobProcessID);
                                 m.Field(jp => jp.ProcessName).Editable(false);
                                 m.Field(jp => jp.Difference).Editable(false);
+                                m.Field(jp => jp.Status).Editable(false);
                             })
                         )
-                        .HtmlAttributes(new { style = "width:1010px;" })
+                        .HtmlAttributes(new { style = "width:1200px;" })
                         .ToClientTemplate())
-                    </text>
-                    );         
+                </text>
+                    );
             })
-            .ToClientTemplate())
+                                    .ToClientTemplate())
 </script>
 
 <script type="text/kendo-template" id="message">
@@ -168,30 +200,20 @@
 </script>
 
 <script type="text/javascript">
+
     var validationMessageTmpl = kendo.template($("#message").html());
 
     function error_handler(args) {
         if (args.errors) {
             var grid = $("#Job").data("kendoGrid");
             grid.one("dataBinding", function (e) {
-                e.preventDefault();   // cancel grid rebind if error occurs                             
+                e.preventDefault();   // cancel grid rebind if error occurs
 
                 for (var error in args.errors) {
                     showMessage(grid.editable.element, error, args.errors[error].errors);
                 }
             });
         }
-        //if (e.errors) {
-        //    var message = "Errors:\n";
-        //    $.each(e.errors, function (key, value) {
-        //        if ('errors' in value) {
-        //            $.each(value.errors, function () {
-        //                message += this + "\n";
-        //            });
-        //        }
-        //    });
-        //    alert(message);
-        //}
     }
 
     function showMessage(container, name, errors) {
@@ -202,24 +224,208 @@
                  .replaceWith(validationMessageTmpl({ field: name, message: errors[0] }))
     }
 
-    function Grid1Edit(e) {
+    function grid1EditHandler(e) {
         if (e.model.PivotJobID == 5 || e.model.PivotJobID == 7 || e.model.PivotJobID == 8) {
             this.closeCell();
         }
     }
 
-    function filterSizes() {
+   function changeMargin(val) {
+        if (val > 0) {
+            return "<div style='color: #91B900;'>" + val.toFixed(2) + "  </div>";
+        }
+        else {
+            val = val - (2 * val);
+            return "<div style='color: #E40045;'>" + val.toFixed(2) + " </div>";
+        }
+   }
+
+   function changeActualProfit(val) {
+       if (val > 0) {
+           return "<div style='color: #91B900;'> $" + val.toFixed(2).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,") + "  </div>";
+       }
+       else {
+           val = val - (2 * val);
+           return "<div style='color: #E40045;'> $" + val.toFixed(2).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,") + " </div>";
+       }
+   }
+
+   function changeEfficiency(val) {
+        val = Math.round(val);
+        if (val < 50) 
+            return "<div style='color:#E40045;'>" + val  + " %</div>";
+        else if (val < 80)
+            return "<div style='color:#FFCD00;'>" + val + " %</div>";
+        else {
+            if (val > 100)
+                val = 100;
+            return "<div style='color:#91B900;'>" + val + " %</div>";
+        }
+    }
+
+    function displayJobStatus(status, jobID) {
+        return "<div class='job_" + jobID + " status_" + status + "' data-jid='" + jobID + "' data-status='" + status + "' onclick='changeJobStatus(" + jobID + ");'></div>";
+    }
+ 
+    function displayProcessStatus(status, jobProcessID) {
+        return "<div class='jp_" + jobProcessID + " status_" + status + "' data-jpid='" + jobProcessID + "' data-status='" + status + "' onclick='changeJobProcessStatus(" + jobProcessID + ");'></div>";
+    }
+
+    function getRepairTypeID() {
         return {
             RepairTypeID: $("#RepairType").val()
         };
     }
 
-    function ChangeCellColor(Difference) {
-        if (Difference > 0) {
-            return "<div style='color: green;font-weight: bold'>" + Difference + " </div>";
+    function repairTypeFilter(element) {
+        var value = this.value(),
+		 	 grid = $("#Job").data("kendoGrid");
+
+        if (value) {
+            grid.dataSource.filter({ field: "RepairTypeID", operator: "eq", value: parseInt(value) });
+        } else {
+            grid.dataSource.filter({});
         }
-        else {
-            return "<div style='color: red;font-weight: bold'>" + Difference + " </div>";
+    }
+
+    function changeJobStatus(jID) {
+        var $this = $(".job_" + jID);
+        var jobID = $this.attr("data-jid");
+        var status = $this.attr("data-status");
+        status++;
+        if (status > 3) {
+            status = 0;
         }
-    }   
+
+        //start_remote_operation();
+        $.ajax({
+            type: "POST",
+            url: "@(Url.RouteUrl(new
+                  {
+                      controller = "Admin",
+                      action = "UpdateJobStatus"
+                }))",
+            data: {
+                jobID: jobID,
+                status: status
+            },
+            success: function (data, stat) {
+
+                $this.removeClass("status_0 status_1 status_2 status_3 ");
+                $this.addClass("status_" + status);
+                $this.attr("data-status", status);
+            },
+            error: function (xhr, stat, err) {
+                alert("Error conecting to the server: " + xhr.statusText + " (" + xhr.status + ")");
+            },
+            complete: function (xhr, stat) {
+                //end_remote_operation();
+            }
+        });
+    }
+
+    
+    function changeJobProcessStatus(jpID) {
+        var $this = $(".jp_" + jpID);
+        var jobProcessID = $this.attr("data-jpid");
+        var status = $this.attr("data-status");
+        status++;
+        if (status > 3) {
+            status = 0;
+        }
+
+        //start_remote_operation();
+        $.ajax({
+            type: "POST",
+            url: "@(Url.RouteUrl(new
+                  {
+                      controller = "Admin",
+                      action = "UpdateJobProcessStatus"
+            }))",
+            data: {
+                jobProcessID: jobProcessID,
+                status: status
+            },
+            success: function (data, stat) {
+                $this.removeClass("status_0 status_1 status_2 status_3 ");
+                $this.addClass("status_" + status);
+                $this.attr("data-status", status);
+            },
+            error: function (xhr, stat, err) {
+                alert("Error conecting to the server: " + xhr.statusText + " (" + xhr.status + ")");
+            },
+            complete: function (xhr, stat) {
+                //end_remote_operation();
+            }
+        });
+    }
+
+    function dataBoundHandler(e) {
+        var grid = this;
+
+        $(".progress").each(function () {
+            var row = $(this).closest("tr");
+            var model = grid.dataItem(row);
+
+            $(this).kendoProgressBar({
+                value: model.PercentComplete,
+                type: "percent",
+                max: 100
+            });
+        });
+    }
+
+    function cancelEventHandler(e) {
+        var grid = this;
+
+        setTimeout(function () {
+            $(".progress").each(function () {
+                var row = $(this).closest("tr");
+                var model = grid.dataItem(row);
+
+                $(this).kendoProgressBar({
+                    value: model.PercentComplete,
+                    type: "percent",
+                    max: 100
+                });
+            });
+        }, 1);
+    }
+ 
+    function statusFilter(element) {
+        var data = [
+                        { text: "Not Started", value: "0" },
+                        { text: "In Progress", value: "1" },
+                        { text: "Stopped", value: "2" },
+                         { text: "Completed", value: "3" }
+        ];
+
+        element.kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: data,
+            optionLabel: "Select Value--"
+        });
+    }
+
 </script>
+
+<style>
+
+    .k-progressbar {
+        width: 110px;
+    }
+
+    #addButton {
+        float: left;
+    }
+
+    #categories {
+        vertical-align: middle;
+    }
+
+    .toolbar {
+        float: right;
+    }
+
+</style>

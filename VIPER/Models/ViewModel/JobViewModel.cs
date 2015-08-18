@@ -35,9 +35,15 @@ namespace VIPER.Models.ViewModel
 
         public decimal InvoicedTotal { get; set; }
 
-        public decimal EfficiencyRate { get; set; }
+        public decimal Efficiency { get; set; }
+
+        public decimal Margin { get; set; }
 
         public int TurnTime { get; set; }
+
+        public int Status { get; set; }
+
+        public int PercentComplete { get; set; }
 
         public decimal LaborCost { get; set; }
 
@@ -53,11 +59,9 @@ namespace VIPER.Models.ViewModel
 
         public int HourID { get; set; }
 
-        public RepairTypeViewModel RepairType { get; set; }
+        public RepairType RepairType { get; set; }
 
-        public SizeViewModel Size { get; set; }
-
-        public HourViewModel Hour { get; set; }
+        public Size Size { get; set; }
 
     }
 }

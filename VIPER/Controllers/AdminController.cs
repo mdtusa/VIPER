@@ -20,9 +20,6 @@ namespace VIPER.Controllers
         private ProcessTimeRepository ptRepo;
         private SizeRepository sizeRepo;
         private JobRepository jobRepo;
-        private CustomerRepository customerRepo;
-        private LocationRepository locationRepo;
-        private HourRepository hourRepo;
         private ScheduleRepository scheduleRepo;
         private EmployeeRepository empRepo;
         public HolidayRepository holidayRepo;
@@ -33,9 +30,6 @@ namespace VIPER.Controllers
             ptRepo = new ProcessTimeRepository();
             sizeRepo = new SizeRepository();
             jobRepo = new JobRepository();
-            customerRepo = new CustomerRepository();
-            locationRepo = new LocationRepository();
-            hourRepo = new HourRepository();
             scheduleRepo = new ScheduleRepository();
             empRepo = new EmployeeRepository();
             holidayRepo = new HolidayRepository();
@@ -47,9 +41,6 @@ namespace VIPER.Controllers
             sizeRepo.Dispose();
             ptRepo.Dispose();
             jobRepo.Dispose();
-            customerRepo.Dispose();
-            locationRepo.Dispose();
-            hourRepo.Dispose();
             scheduleRepo.Dispose();
             empRepo.Dispose();
             holidayRepo.Dispose();
